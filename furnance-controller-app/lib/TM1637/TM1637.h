@@ -4,55 +4,9 @@
 #define TM1637_H
 
 
-/** An interface for driving TM1637 LED controller
- *
- * @code
- * #include "mbed.h"
- * #include "TM1637.h"
- *
- * Serial pc(USBTX, USBRX);
- *
- * //DisplayData_t size is 6 bytes (6 grids @ 8 segments)
- * TM1637::DisplayData_t all_str  = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
- *
- * // KeyData_t size is 1 bytes
- * TM1637::KeyData_t keydata;
- *
- * // TM1637 declaration, Select the desired type in TM1637_Config.h
- * //TM1637_DISPLAY DISPLAY(p5,p6,p7);     //LPC1768 DEPRECATED version
- * TM1637_DISPLAY DISPLAY(p6, p7);       //LPC1768
- * //TM1637_DISPLAY DISPLAY(D9, D10);      //F401
- *
- * int main() {
- *   DISPLAY.cls();
- *   DISPLAY.writeData(all_str);
- *   wait(1);
- *   DISPLAY.setBrightness(TM1637_BRT0);
- *   wait(1);
- *   DISPLAY.setBrightness(TM1637_BRT3);
- *
- *   while (1) {
- *     DISPLAY.cls();
- *     wait(0.5);
- *     DISPLAY.writeData(all_str);
- *     wait(1.0);
- *     DISPLAY.cls();
- *     DISPLAY.printf(" HI ");
- *     wait(1.0);
- *
- *     // Check and read keydata
- *     if (DISPLAY.getKeys(&keydata)) {
- *       pc.printf("Keydata = 0x%02x\r\n", keydata);
- *
- *       if (keydata == TM1637_SW9_BIT) { //sw9
- *         DISPLAY.cls();
- *         DISPLAY.printf("--09");
- *       }
- *     } // Check keydata
- *   } // while
- * }
- * @endcode
- */
+/**
+ * @brief An interface for driving TM1637 LED controller
+*/
 
 
 // Segment bit positions for 7 Segment display using the DISPLAY and ROBOTDYN mapping for TM1637

@@ -1,5 +1,6 @@
 #include "mbed.h"
 #include "../lib/DS1820/platform/mbed/ds1820-mbed.h"
+#include "../lib/DS3231/platform/mbed/ds3231-mbed.h"
 #include "../lib/TM1637/TM1637.h"
 
 
@@ -9,6 +10,12 @@ DigitalOut led(LED1);
 
 int main()
 {
+    // DS3231
+    #define RTC_SDA PB_7
+    #define RTC_SCL PB_6
+    ds3231_mbed_init(RTC_SDA, RTC_SCL);
+
+
     // TM1637
     #define LED_DIO PA_0
     #define LED_CLK PA_5

@@ -1,6 +1,6 @@
 
 /**
- *  @brief:  Implementation of a DS1820 platform dependent [MBED] radio functions
+ *  @brief:  Implementation of a DS1820 platform dependent [MBED] functions
  *  @author: luk6xff
  *  @email:  lukasz.uszko@gmail.com
  *  @date:   2019-11-15
@@ -41,7 +41,7 @@ void ds1820_delay_us(uint32_t us)
     wait_us(us);
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 bool ds1820_onewire_reset(void)
 {
     // This will return false if no devices are present on the data bus
@@ -59,7 +59,7 @@ bool ds1820_onewire_reset(void)
     return presence;
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void ds1820_onewire_bit_out(bool bit_data)
 {
     _data_pin->output();
@@ -77,7 +77,7 @@ void ds1820_onewire_bit_out(bool bit_data)
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 bool ds1820_onewire_bit_in(void)
 {
     bool answer;
@@ -91,7 +91,7 @@ bool ds1820_onewire_bit_in(void)
     return answer;
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void ds1820_set_parasite_pin(bool enable)
 {
     if (enable)

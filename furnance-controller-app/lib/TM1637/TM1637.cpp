@@ -525,7 +525,7 @@ void TM1637::setUDC(unsigned char udc_idx, int udc_data) {
 /** Write a single character (Stream implementation)
   */
 int TM1637::_putc(int value) {
-//The CATALAX mapping between Digit positions (Left to Right) and Grids is:
+//The DISPLAY mapping between Digit positions (Left to Right) and Grids is:
 //  GR1 GR2 GR3 GR4
 //The memory addresses or column numbers are:
 //   0   1   2   3
