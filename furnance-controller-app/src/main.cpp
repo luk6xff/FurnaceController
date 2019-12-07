@@ -27,11 +27,11 @@ int main()
     const uint8_t raw[]  = {0x31, 0x32, 0x33, 0x34};
     tm1637_mbed_init(&disp, &disp_mbed);
     tm1637_clear(&disp);
-    tm1637_print_str(&disp, str, sizeof(str), 0);
+    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
     wait_us(1000*2000);
-    tm1637_print_raw(&disp, raw, sizeof(raw), 0);
+    tm1637_print(&disp, raw, sizeof(raw));
     wait_us(1000*2000);
-    tm1637_printf(&disp, (const uint8_t*)str, sizeof(str));
+    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
     tm1637_set_brightness(&disp, TM1637_BRT0);
     wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT1);
@@ -48,10 +48,9 @@ int main()
     wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT7);
     wait_us(1000*500);
-    tm1637_clear(&disp);
-    wait_us(1000*1000);
     tm1637_set_brightness(&disp, TM1637_BRT3);
-    tm1637_print_str(&disp, str, sizeof(str), 0);
+    tm1637_clear(&disp);
+    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
     wait_us(1000*1000);
     tm1637_clear(&disp);
 
@@ -85,7 +84,7 @@ int main()
                 char buf[4];
                 sprintf(buf, "%2.1f*",temp);
                 tm1637_clear(&disp);
-                tm1637_print_str(&disp, buf, 4, 0);
+                tm1637_print(&disp, (const uint8_t*)buf, 4);
                 wait_us(1000*2000);
             }
         }

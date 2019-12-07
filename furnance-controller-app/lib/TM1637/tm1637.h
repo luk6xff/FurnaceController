@@ -64,39 +64,39 @@ extern "C" {
 
 
 
-//Icons Grid 1
+// Icons Grid 1
 #define S7_DP1  0x0080
 #define S7_ICON_GR1 (0x0000)
 
-//Icons Grid 2
+// Icons Grid 2
 #define S7_DP2  0x0080
 #define S7_COL2 0x0080
 #define S7_ICON_GR2 (0x0000)
 
-//Icons Grid 3
+// Icons Grid 3
 #define S7_DP3  0x0080
 #define S7_ICON_GR3 (0x0000)
 
-//Icons Grid 4
+// Icons Grid 4
 #define S7_DP4  0x0080
 #define S7_ICON_GR4 (0x0000)
 
-//Icons Grid 5
+// Icons Grid 5
 #define S7_DP5  0x0080
 #define S7_ICON_GR5 (0x0000)
 
-//Icons Grid 6
+// Icons Grid 6
 #define S7_DP6  0x0080
 #define S7_ICON_GR6 (0x0000)
 
 
-//Mask for blending out and restoring Icons
+// Mask for blending out and restoring Icons
 extern const char MASK_ICON_GRID[];
 
 
 // ASCII Font definitions for segments in each character
 //
-//32 0x20  Symbols
+// 32 0x20  Symbols
 #define TM1637_CHAR_SPC  (0x0000)
 #define TM1637_CHAR_EXC  (S7_B | S7_C) //!
 #define TM1637_CHAR_QTE  (S7_B | S7_F) //"
@@ -114,7 +114,7 @@ extern const char MASK_ICON_GRID[];
 #define TM1637_CHAR_DPT  (S7_DP)
 #define TM1637_CHAR_RS   (S7_B | S7_E  | S7_G)  // /
 
-//48 0x30  Digits
+// 48 0x30  Digits
 #define TM1637_CHAR_0    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F)
 #define TM1637_CHAR_1    (S7_B | S7_C)
 #define TM1637_CHAR_2    (S7_A | S7_B | S7_D | S7_E | S7_G)
@@ -126,7 +126,7 @@ extern const char MASK_ICON_GRID[];
 #define TM1637_CHAR_8    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F | S7_G)
 #define TM1637_CHAR_9    (S7_A | S7_B | S7_C | S7_D | S7_F | S7_G)
 
-//58 0x3A
+// 58 0x3A
 #define TM1637_CHAR_COL  (S7_D | S7_G) // :
 #define TM1637_CHAR_SCL  (S7_D | S7_G) // ;
 #define TM1637_CHAR_LT   (S7_D | S7_E | S7_G)             // <
@@ -135,7 +135,7 @@ extern const char MASK_ICON_GRID[];
 #define TM1637_CHAR_QM   (S7_A | S7_B | S7_E | S7_G)      // ?
 #define TM1637_CHAR_AT   (S7_A | S7_B | S7_C | S7_D | S7_E  | S7_G)  // @
 
-//65 0x41  Upper case alphabet
+// 65 0x41  Upper case alphabet
 #define TM1637_CHAR_A    (S7_A | S7_B | S7_C | S7_E | S7_F | S7_G )
 #define TM1637_CHAR_B    (S7_C | S7_D | S7_E | S7_F | S7_G)
 #define TM1637_CHAR_C    (S7_A | S7_D | S7_E | S7_F)
@@ -164,7 +164,7 @@ extern const char MASK_ICON_GRID[];
 #define TM1637_CHAR_Y    (S7_B | S7_C | S7_D | S7_F | S7_G)
 #define TM1637_CHAR_Z    (S7_A | S7_B | S7_D | S7_E | S7_G)
 
-//91 0x5B
+// 91 0x5B
 #define TM1637_CHAR_SBL  (S7_A | S7_D | S7_E | S7_F) // [
 #define TM1637_CHAR_LS   (S7_C | S7_F | S7_G)        // left slash
 #define TM1637_CHAR_SBR  (S7_A | S7_B | S7_C | S7_D) // ]
@@ -172,7 +172,7 @@ extern const char MASK_ICON_GRID[];
 #define TM1637_CHAR_UDS  (S7_D)                      // _
 #define TM1637_CHAR_DSH  (S7_F)                      // `
 
-//97 0x61  Lower case alphabet
+// 97 0x61  Lower case alphabet
 #define TM1637_CHAR_a     TM1637_CHAR_A
 #define TM1637_CHAR_b     TM1637_CHAR_B
 #define TM1637_CHAR_c     TM1637_CHAR_C
@@ -201,7 +201,7 @@ extern const char MASK_ICON_GRID[];
 #define TM1637_CHAR_y     TM1637_CHAR_Y
 #define TM1637_CHAR_z     TM1637_CHAR_Z
 
-//123 0x7B
+// 123 0x7B
 #define TM1637_CHAR_CBL  (S7_A | S7_D | S7_E | S7_F)        // {
 #define TM1637_CHAR_OR   (S7_B | S7_C)                      // |
 #define TM1637_CHAR_CBR  (S7_A | S7_B | S7_C | S7_D)        // }
@@ -223,19 +223,10 @@ extern const char MASK_ICON_GRID[];
 extern const uint16_t TM1637_FONT[];
 
 
-//TM1637 Display data
-#define TM1637_MAX_DIGITS_NUM  6
-#define TM1637_BYTES_PER_GRID   1
-
-
-//Memory size in bytes for Display and Keymatrix
-#define TM1637_DISPLAY_MEM  (TM1637_MAX_DIGITS_NUM * TM1637_BYTES_PER_GRID)
-#define TM1637_KEY_MEM         2
-
-//Reserved bits for commands
+// Reserved bits for commands
 #define TM1637_CMD_MSK      0xC0
 
-//Data setting commands
+// Data setting commands
 #define TM1637_DATA_SET_CMD 0x40
 #define TM1637_DATA_WR      0x00
 #define TM1637_KEY_RD       0x02
@@ -244,11 +235,11 @@ extern const uint16_t TM1637_FONT[];
 #define TM1637_MODE_NORM    0x00
 #define TM1637_MODE_TEST    0x08
 
-//Address setting commands
+// Address setting commands
 #define TM1637_ADDR_SET_CMD 0xC0
 #define TM1637_ADDR_MSK     0x07 //0..5
 
-//Display control commands
+// Display control commands
 #define TM1637_DSP_CTRL_CMD 0x80
 #define TM1637_BRT_MSK      0x07
 #define TM1637_BRT0         0x00 //Pulsewidth 1/16
@@ -266,9 +257,9 @@ extern const uint16_t TM1637_FONT[];
 #define TM1637_DSP_ON       0x08
 
 
-//Access to 16 Switches
-//S0 S1 S2 K1 K2 1 1 1
-//K1,K2 = 0 1
+// Access to 16 Switches
+// S0 S1 S2 K1 K2 1 1 1
+// K1,K2 = 0 1
 #define TM1637_SW1_BIT      0xEF
 #define TM1637_SW2_BIT      0x6F
 #define TM1637_SW3_BIT      0xAF
@@ -293,11 +284,16 @@ extern const uint16_t TM1637_FONT[];
 // BIT DELAY microseconds, check what works on your HW
 #define TM1637_BIT_DELAY  20
 
-
+//TM1637 Display data
+#define TM1637_MAX_DIGITS_NUM  6
+#define TM1637_BYTES_PER_GRID   1
 // Modify for your screen
-#define DISPLAY_NR_GRIDS  4
-#define DISPLAY_NR_DIGITS 4
-#define DISPLAY_NR_UDC    8
+#define TM1637_DISPLAY_NR_DIGITS 4
+#define TM1637_DISPLAY_NR_UDC    8
+//Memory size in bytes for Display and Keymatrix
+#define TM1637_DISPLAY_MEM  (TM1637_DISPLAY_NR_DIGITS * TM1637_BYTES_PER_GRID)
+#define TM1637_KEY_MEM       2
+
 
 /** Enums **/
 //  Grid encoded in 8 MSBs, tm1637_icon pattern encoded in 16 LSBs
@@ -327,7 +323,7 @@ typedef enum
 typedef uint8_t tm1637_display_data[TM1637_DISPLAY_MEM];
 
 /** Datatype for user defined chars */
-typedef uint8_t tm1637_udc_data[DISPLAY_NR_UDC];
+typedef uint8_t tm1637_udc_data[TM1637_DISPLAY_NR_UDC];
 
 /** Datatypes for keymatrix data */
 typedef uint8_t tm1637_key_data;
@@ -429,25 +425,12 @@ void tm1637_set_udc(tm1637* const dev, uint8_t udc_idx, int udc_data);
 */
 int tm1637_columns(const tm1637* const dev);
 
-
 /**
- * @brief Print raw data on the display
+ * @brief Print data on the display
  *
  * @return success status
 */
-void tm1637_print_raw(tm1637* const dev, const uint8_t* data, uint8_t data_len,
-                      uint8_t position);
-
-/**
- * @brief Print string on the display
- *
- * @return success status
-*/
-void tm1637_print_str(tm1637* const dev, const char* data, uint8_t data_len,
-                      uint8_t position);
-
-
-void tm1637_printf(tm1637* const dev, const uint8_t* data, size_t data_size);
+void tm1637_print(tm1637* const dev, const uint8_t* data, size_t data_len);
 
 //-----------------------------------------------------------------------------
 // @brief HW DEPENDENT FUNCTIONS - must be defined for each platform

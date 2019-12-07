@@ -155,39 +155,12 @@ static void _write_cmd(tm1637* const dev, uint8_t cmd, uint8_t data);
 /**
  * @brief  Write Display datablock to TM1637
  * @param  tm1637_display_data data Array of TM1637_DISPLAY_MEM (=4) bytes for displaydata
- * @param  length number bytes to write (valid range 0..(DISPLAY_NR_GRIDS * TM1637_BYTES_PER_GRID_NUM) (=4), when starting at address 0)
+ * @param  length number bytes to write (valid range 0..(TM1637_DISPLAY_NR_DIGITS * TM1637_BYTES_PER_GRID_NUM) (=4), when starting at address 0)
  * @param  pos address display memory location to write bytes (default = 0)
  * @return none
  */
 void _write_data(tm1637* const dev, const tm1637_display_data data,
                  uint8_t data_len, uint8_t pos);
-
-
-/**
- * @brief Encodes a character to sevensegment binairy
- *
- * @param[in] c - A character to encode
- * @return    c - An encoded character
- */
-static uint8_t _encode(char c);
-
-/**
- * @brief Encodes a null terminated c string (char array) to sevensegment binairy
- *
- * @param[out] buf          Holds the encodes char array
- * @param[in]  str          The null-terminated c string to encode
- * @param [in] buf_size   The size/length of the buffer
- */
-static uint8_t _encode_str(uint8_t* buf, const char* str, size_t buf_size);
-
-/**
- * @brief Encodes a byte array to sevensegment binairy
- *
- * @param [out] buf       Holds the encodes char array
- * @param [in] data       The byte array to encode
- * @param [in] buf_size   The size/length of the buffer
- */
-static uint8_t _encode_bytes(uint8_t* buf, const uint8_t* data, size_t buf_size);
 
 
 //------------------------------------------------------------------------------
@@ -208,10 +181,11 @@ void tm1637_init(tm1637* const dev)
     tm1637_set_clk(dev, TM1637_PIN_HIGH);
 
     // Init controller
-    dev->column  = 0;
-    dev->columns_num = DISPLAY_NR_DIGITS;
+    dev->column = 0;
+    dev->columns_num = TM1637_DISPLAY_NR_DIGITS;
     dev->display_on_off = TM1637_DSP_ON;
     dev->brightness = TM1637_BRT_DEF;
+    tm1637_clear(dev);
     _write_cmd(dev, TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness);                                 // Display control cmd, display on/off, brightness
     _write_cmd(dev, TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
 }
@@ -222,11 +196,13 @@ void tm1637_clear(tm1637* const dev)
     _start(dev);
 
     _write(dev, TM1637_ADDR_SET_CMD | 0x00); // Address set cmd, 0
-    for (int cnt=0; cnt<TM1637_DISPLAY_MEM; cnt++)
+    for (int i=0; i<TM1637_DISPLAY_MEM; i++)
     {
-        _write(dev, 0x00); // data
+        dev->display_buffer[i] = 0x00;
+        _write(dev, dev->display_buffer[i]); // data
     }
     _stop(dev);
+    dev->column = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -323,7 +299,7 @@ void tm1637_clear_icon(tm1637* const dev, tm1637_icon icon)
 void tm1637_set_udc(tm1637* const dev, uint8_t udc_idx, int udc_data)
 {
     //Sanity check
-    if (udc_idx > (DISPLAY_NR_UDC-1))
+    if (udc_idx > (TM1637_DISPLAY_NR_UDC-1))
     {
         return;
     }
@@ -340,44 +316,75 @@ int columns(const tm1637* const dev)
 
 
 //------------------------------------------------------------------------------
-void tm1637_print_raw(tm1637* const dev, const uint8_t* data, uint8_t data_len,
-                      uint8_t position)
+void tm1637_print(tm1637* const dev, const uint8_t* data, size_t data_len)
 {
-    tm1637_display_data encoded_data;
-
-    _start(dev);
-
-    if ((data_len + position) > TM1637_DISPLAY_MEM)
+    for (size_t i = 0; i < data_len; i++)
     {
-        data_len = (TM1637_DISPLAY_MEM - position);
+        uint8_t addr;
+        bool write_char = false;
+        uint8_t font    = 0x00;
+
+        if ((data[i] == 0x00) || (data[i] == '\n') || (data[i] == '\r'))
+        {
+            // No character to write
+            write_char = false;
+
+            // Update Cursor
+            dev->column = 0;
+        }
+        else if ((data[i] == '.') || (data[i] == ','))
+        {
+            // No character to write
+            write_char = false;
+            font = S7_DP; // placeholder for all DPs
+
+            // Check to see that DP can be shown for current column
+            if (dev->column > 0)
+            {
+                // Translate between dev->column and dev->display_buffer entries
+                // Add DP to bitpattern of digit left of current column.
+                addr = (dev->column - 1);
+                // Save icons...and set bits for decimal point to write
+                dev->display_buffer[addr] = dev->display_buffer[addr] | font;
+                _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+                // No Cursor Update here
+            }
+        }
+        else if (data[i] < TM1637_DISPLAY_NR_UDC) // 0...8
+        {
+            //Character to write
+            write_char = true;
+            font = dev->ud_chars[data[i]];
+        }
+
+        // Encode all the ASCII characters
+        else if ((data[i] >= TM1637_FONT_START) && (data[i] <= TM1637_FONT_END))
+        {
+            // Character to write
+            write_char = true;
+            font = TM1637_FONT[data[i] - TM1637_FONT_START];
+        }
+
+        if (write_char)
+        {
+            // Character to write
+            // Translate between dev->column and displaybuffer entries
+            addr = dev->column;
+
+            // Save icons...and set bits for character to write
+            dev->display_buffer[addr] = (dev->display_buffer[addr] & MASK_ICON_GRID[dev->column]) | font;
+
+            _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+
+            // Update Cursor
+            dev->column++;
+            if (dev->column > (TM1637_DISPLAY_NR_DIGITS - 1))
+            {
+                dev->column = 0;
+            }
+        }
     }
-
-    // Encode
-    data_len = _encode_bytes(encoded_data, data, data_len);
-    // Store
-    _write_data(dev, encoded_data, data_len, position);
 }
-
-//------------------------------------------------------------------------------
-void tm1637_print_str(tm1637* const dev, const char* data, uint8_t data_len,
-                      uint8_t position)
-{
-    uint8_t encoded_data[4];
-
-    _start(dev);
-
-    if ((data_len + position) > TM1637_DISPLAY_MEM)
-    {
-        data_len = (TM1637_DISPLAY_MEM - position);
-    }
-
-    // Encode
-    data_len = _encode_str(encoded_data, data, data_len);
-    // Store
-    _write_data(dev, encoded_data, data_len, position);
-}
-
-
 
 //------------------------------------------------------------------------------
 // @brief PRIVATE FUNCTIONS DEFINITIONS
@@ -532,121 +539,6 @@ void _write_data(tm1637* const dev, const tm1637_display_data data,
     }
 
     _stop(dev);
-}
-
-//------------------------------------------------------------------------------
-uint8_t _encode(char c)
-{
-    if (c < ' ')  // 32 (ASCII)
-    {
-        return 0;
-    }
-    return TM1637_FONT[c - ' '];
-};
-
-//------------------------------------------------------------------------------
-uint8_t _encode_str(uint8_t* buf, const char* str, size_t buf_size)
-{
-    uint8_t i;
-
-    for (i=0; i < buf_size; i++)
-    {
-        if (str[i] == '\0' )
-        {
-            return i;
-        }
-        buf[i] = _encode(str[i]);
-    };
-    return i;
-}
-
-//------------------------------------------------------------------------------
-uint8_t _encode_bytes(uint8_t* buf, const uint8_t* data, size_t buf_size)
-{
-    uint8_t i;
-
-    for (i=0; i < buf_size; i++)
-    {
-        buf[i] = _encode((char)data[i]);
-    };
-    return i;
-}
-
-//------------------------------------------------------------------------------
-void tm1637_printf(tm1637* const dev, const uint8_t* data, size_t data_size)
-{
-    //The DISPLAY mapping between Digit positions (Left to Right) and Grids is:
-    //  GR1 GR2 GR3 GR4
-    //The memory addresses or column numbers are:
-    //   0   1   2   3
-
-    for (int i = 0; i < data_size; i++)
-    {
-        int value = data[i];
-        int addr;
-        bool validChar = false;
-        char pattern   = 0x00;
-
-        if ((value == '\n') || (value == '\r'))
-        {
-            //No character to write
-            validChar = false;
-
-            //Update Cursor
-            dev->column = 0;
-        }
-        else if ((value == '.') || (value == ','))
-        {
-            //No character to write
-            validChar = false;
-            pattern = S7_DP; // placeholder for all DPs
-
-            // Check to see that DP can be shown for current column
-            if (dev->column > 0)
-            {
-                //Translate between dev->column and displaybuffer entries
-                //Add DP to bitpattern of digit left of current column.
-                addr = (dev->column - 1);
-                //Save icons...and set bits for decimal point to write
-                dev->display_buffer[addr] = dev->display_buffer[addr] | pattern;
-                _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
-                //No Cursor Update
-            }
-        }
-        else if ((value >= 0) && (value < DISPLAY_NR_UDC))
-        {
-            //Character to write
-            validChar = true;
-            pattern = dev->ud_chars[value];
-        }
-
-        //Display all ASCII characters
-        else if ((value >= TM1637_FONT_START) && (value <= TM1637_FONT_END))
-        {
-            //Character to write
-            validChar = true;
-            pattern = TM1637_FONT[value - TM1637_FONT_START];
-        }
-
-        if (validChar)
-        {
-            //Character to write
-            //Translate between dev->column and displaybuffer entries
-            addr = dev->column;
-
-            //Save icons...and set bits for character to write
-            dev->display_buffer[addr] = (dev->display_buffer[addr] & MASK_ICON_GRID[dev->column]) | pattern;
-
-            _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
-
-            //Update Cursor
-            dev->column++;
-            if (dev->column > (DISPLAY_NR_DIGITS - 1))
-            {
-                dev->column = 0;
-            }
-        } // if validChar
-    }
 }
 
 //------------------------------------------------------------------------------
