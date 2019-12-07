@@ -23,36 +23,35 @@ int main()
     #define LED_CLK PA_5
     tm1637_mbed disp_mbed = { DigitalInOut(LED_DIO), DigitalOut(LED_CLK) };
     tm1637 disp;
-    tm1637_display_data all_str  = {0xFF, 0xFF, 0xFF, 0xFF};
+    const char str[]  = {"HI-L"};
+    const uint8_t raw[]  = {0x31, 0x32, 0x33, 0x34};
     tm1637_mbed_init(&disp, &disp_mbed);
     tm1637_clear(&disp);
-    tm1637_write_data(&disp, all_str, sizeof(all_str), 0);
-    wait_ms(1000);
+    tm1637_print_str(&disp, str, sizeof(str), 0);
+    wait_us(1000*2000);
+    tm1637_print_raw(&disp, raw, sizeof(raw), 0);
     tm1637_set_brightness(&disp, TM1637_BRT0);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT1);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT2);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT3);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT4);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT5);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT6);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT7);
-    wait_ms(500);
+    wait_us(1000*500);
     tm1637_clear(&disp);
-    wait_ms(1000);
+    wait_us(1000*1000);
     tm1637_set_brightness(&disp, TM1637_BRT3);
-    tm1637_write_data(&disp, all_str, sizeof(all_str), 0);
-    wait_ms(1000);
+    tm1637_print_str(&disp, str, sizeof(str), 0);
+    wait_us(1000*1000);
     tm1637_clear(&disp);
-    //display.printf(" HI ");
-    wait_ms(2000);
-    //display.printf("GIT!");
 
     // DS18B20
     const int MAX_SENSORS = 16;
@@ -60,10 +59,8 @@ int main()
     int i;
     int devices_found=0;
     ds1820_mbed_init(DS18B20_DATA_PIN, NC);
-
     // Initialize global state variables
     ds1820_search_rom_setup();
-
     // Loop to find all devices on the data line
     while (ds1820_search_rom() && devices_found<MAX_SENSORS-1)
     {
@@ -87,8 +84,8 @@ int main()
                 char buf[4];
                 sprintf(buf, "%2.1f*",temp);
                 tm1637_clear(&disp);
-                //display.printf("%s", buf);
-                wait_ms(2000);
+                tm1637_print_str(&disp, buf, 4, 0);
+                wait_us(1000*2000);
             }
         }
     }

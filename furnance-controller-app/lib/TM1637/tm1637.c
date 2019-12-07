@@ -13,119 +13,110 @@ const char MASK_ICON_GRID[] = {
                                 LO(S7_ICON_GR6)
                               };
 
-// ASCII Font definition table for transmission to TM1637
-
-// Display all ASCII characters
-const short FONT_7S[]  = {
-                             C7_SPC, //32 0x20, Space
-                             C7_EXC,
-                             C7_QTE,
-                             C7_HSH,
-                             C7_DLR,
-                             C7_PCT,
-                             C7_AMP,
-                             C7_ACC,
-                             C7_LBR,
-                             C7_RBR,
-                             C7_MLT,
-                             C7_PLS,
-                             C7_CMA,
-                             C7_MIN,
-                             C7_DPT,
-                             C7_RS,
-                             C7_0,   //48 0x30
-                             C7_1,
-                             C7_2,
-                             C7_3,
-                             C7_4,
-                             C7_5,
-                             C7_6,
-                             C7_7,
-                             C7_8,
-                             C7_9,
-                             C7_COL, //58 0x3A
-                             C7_SCL,
-                             C7_LT,
-                             C7_EQ,
-                             C7_GT,
-                             C7_QM,
-                             C7_AT,  //64 0x40
-                             C7_A,   //65 0x41, A
-                             C7_B,
-                             C7_C,
-                             C7_D,
-                             C7_E,
-                             C7_F,
-                             C7_G,
-                             C7_H,
-                             C7_I,
-                             C7_J,
-                             C7_K,
-                             C7_L,
-                             C7_M,
-                             C7_N,
-                             C7_O,
-                             C7_P,
-                             C7_Q,
-                             C7_R,
-                             C7_S,
-                             C7_T,
-                             C7_U,
-                             C7_V,
-                             C7_W,
-                             C7_X,
-                             C7_Y,
-                             C7_Z,   //90 0x5A, Z
-                             C7_SBL, //91 0x5B
-                             C7_LS,
-                             C7_SBR,
-                             C7_PWR,
-                             C7_UDS,
-                             C7_ACC,
-                             C7_A,   //97 0x61, A replacing a
-                             C7_B,
-                             C7_C,
-                             C7_D,
-                             C7_E,
-                             C7_F,
-                             C7_G,
-                             C7_H,
-                             C7_I,
-                             C7_J,
-                             C7_K,
-                             C7_L,
-                             C7_M,
-                             C7_N,
-                             C7_O,
-                             C7_P,
-                             C7_Q,
-                             C7_R,
-                             C7_S,
-                             C7_T,
-                             C7_U,
-                             C7_V,
-                             C7_W,
-                             C7_X,
-                             C7_Y,
-                             C7_Z,   // 122 0x7A, Z replacing z
-                             C7_CBL, // 123 0x7B
-                             C7_OR,
-                             C7_CBR,
-                             C7_TLD,
-                             C7_DEL  // 127
-                        };
+// ASCII Font definition mapping table for transmission to TM1637
+const uint16_t FONT_7S[] =
+{
+    C7_SPC, //32 0x20, Space
+    C7_EXC,
+    C7_QTE,
+    C7_HSH,
+    C7_DLR,
+    C7_PCT,
+    C7_AMP,
+    C7_ACC,
+    C7_LBR,
+    C7_RBR,
+    C7_MLT,
+    C7_PLS,
+    C7_CMA,
+    C7_MIN,
+    C7_DPT,
+    C7_RS,
+    C7_0,   //48 0x30
+    C7_1,
+    C7_2,
+    C7_3,
+    C7_4,
+    C7_5,
+    C7_6,
+    C7_7,
+    C7_8,
+    C7_9,
+    C7_COL, //58 0x3A
+    C7_SCL,
+    C7_LT,
+    C7_EQ,
+    C7_GT,
+    C7_QM,
+    C7_AT,  //64 0x40
+    C7_A,   //65 0x41, A
+    C7_B,
+    C7_C,
+    C7_D,
+    C7_E,
+    C7_F,
+    C7_G,
+    C7_H,
+    C7_I,
+    C7_J,
+    C7_K,
+    C7_L,
+    C7_M,
+    C7_N,
+    C7_O,
+    C7_P,
+    C7_Q,
+    C7_R,
+    C7_S,
+    C7_T,
+    C7_U,
+    C7_V,
+    C7_W,
+    C7_X,
+    C7_Y,
+    C7_Z,   //90 0x5A, Z
+    C7_SBL, //91 0x5B
+    C7_LS,
+    C7_SBR,
+    C7_PWR,
+    C7_UDS,
+    C7_ACC,
+    C7_A,   //97 0x61, A replacing a
+    C7_B,
+    C7_C,
+    C7_D,
+    C7_E,
+    C7_F,
+    C7_G,
+    C7_H,
+    C7_I,
+    C7_J,
+    C7_K,
+    C7_L,
+    C7_M,
+    C7_N,
+    C7_O,
+    C7_P,
+    C7_Q,
+    C7_R,
+    C7_S,
+    C7_T,
+    C7_U,
+    C7_V,
+    C7_W,
+    C7_X,
+    C7_Y,
+    C7_Z,   // 122 0x7A, Z replacing z
+    C7_CBL, // 123 0x7B
+    C7_OR,
+    C7_CBR,
+    C7_TLD,
+    C7_DEL  // 127
+};
 
 //------------------------------------------------------------------------------
 // @brief PRIVATE FUNCTIONS
 //------------------------------------------------------------------------------
-/**
- * @brief Init the Serial interface and the controller
- * @param  none
- * @return none
- */
-static void _init(tm1637* const dev);
-
-
 /**
  * @brief Generate Start condition for TM1637
  * @param  none
@@ -162,9 +153,48 @@ static uint8_t _read(tm1637* const dev);
 static void _write_cmd(tm1637* const dev, uint8_t cmd, uint8_t data);
 
 /**
+ * @brief  Write Display datablock to TM1637
+ * @param  tm1637_display_data data Array of TM1637_DISPLAY_MEM (=4) bytes for displaydata
+ * @param  length number bytes to write (valid range 0..(DISPLAY_NR_GRIDS * TM1637_BYTES_PER_GRID_NUM) (=4), when starting at address 0)
+ * @param  pos address display memory location to write bytes (default = 0)
+ * @return none
+ */
+void _write_data(tm1637* const dev, const tm1637_display_data data,
+                 uint8_t data_len, uint8_t pos);
+
+
+/**
+ * @brief Encodes a character to sevensegment binairy
+ *
+ * @param[in] c - A character to encode
+ * @return    c - An encoded character
+ */
+static uint8_t _encode(char c);
+
+/**
+ * @brief Encodes a null terminated c string (char array) to sevensegment binairy
+ *
+ * @param[out] buf          Holds the encodes char array
+ * @param[in]  str          The null-terminated c string to encode
+ * @param [in] buf_size   The size/length of the buffer
+ */
+static uint8_t _encode_str(uint8_t* buf, const char* str, size_t buf_size);
+
+/**
+ * @brief Encodes a byte array to sevensegment binairy
+ *
+ * @param [out] buf       Holds the encodes char array
+ * @param [in] data       The byte array to encode
+ * @param [in] buf_size   The size/length of the buffer
+ */
+static uint8_t _encode_bytes(uint8_t* buf, const uint8_t* data, size_t buf_size);
+
+/**
  * @brief Write a single character
  */
 static int _putc(tm1637* const dev, int value);
+
+
 
 //------------------------------------------------------------------------------
 // @brief FUNCTIONS DEFINITIONS
@@ -175,10 +205,21 @@ void tm1637_init(tm1637* const dev)
     {
         return;
     }
+
+    // Init Serial bus
+    tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
+
+    tm1637_set_dio(dev, TM1637_PIN_HIGH);
+    tm1637_set_clk(dev, TM1637_PIN_HIGH);
+
+    // Init controller
     dev->column  = 0;
     dev->columns_num = DISPLAY_NR_DIGITS;
-
-    _init(dev);
+    dev->display_on_off = TM1637_DSP_ON;
+    dev->brightness = TM1637_BRT_DEF;
+    _write_cmd(dev, TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness);                                 // Display control cmd, display on/off, brightness
+    _write_cmd(dev, TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
 }
 
 //------------------------------------------------------------------------------
@@ -193,47 +234,6 @@ void tm1637_clear(tm1637* const dev)
     }
     _stop(dev);
 }
-
-
-//------------------------------------------------------------------------------
-// void tm1637_write_data(char data, int address)
-// {
-//     _start();
-
-//     _write(TM1637_ADDR_SET_CMD | (address & TM1637_ADDR_MSK)); // Set Address cmd
-//     _write(data); // data
-
-//     _stop();
-// }
-
-
-//------------------------------------------------------------------------------
-void tm1637_write_data(tm1637* const dev, tm1637_display_data data, int length, int address)
-{
-    _start(dev);
-
-    // Sanity check
-    address &= TM1637_ADDR_MSK;
-    if (length < 0)
-    {
-        length = 0;
-    }
-
-    if ((length + address) > TM1637_DISPLAY_MEM)
-    {
-        length = (TM1637_DISPLAY_MEM - address);
-    }
-
-    _write(dev, TM1637_ADDR_SET_CMD | address); // Set Address
-
-    for (int idx=0; idx<length; idx++)
-    {
-        _write(dev, data[address + idx]); // data
-    }
-
-    _stop(dev);
-}
-
 
 //------------------------------------------------------------------------------
 bool tm1637_get_keys(tm1637* const dev, tm1637_key_data *keydata)
@@ -306,7 +306,7 @@ void tm1637_set_icon(tm1637* const dev, tm1637_icon icon)
 
     //Save char...and set bits for icon to write
     dev->display_buffer[addr] = dev->display_buffer[addr] | LO(icn);
-    tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+    _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
 }
 
 
@@ -321,7 +321,7 @@ void tm1637_clear_icon(tm1637* const dev, tm1637_icon icon)
 
     //Save char...and clr bits for icon to write
     dev->display_buffer[addr] = dev->display_buffer[addr] & ~LO(icn);
-    tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+    _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
 }
 
 
@@ -345,36 +345,57 @@ int columns(const tm1637* const dev)
 }
 
 
+//------------------------------------------------------------------------------
+void tm1637_print_raw(tm1637* const dev, const uint8_t* data, uint8_t data_len,
+                      uint8_t position)
+{
+    tm1637_display_data encoded_data;
+
+    _start(dev);
+
+    if ((data_len + position) > TM1637_DISPLAY_MEM)
+    {
+        data_len = (TM1637_DISPLAY_MEM - position);
+    }
+
+    // Encode
+    data_len = _encode_bytes(encoded_data, data, data_len);
+    // Store
+    _write_data(dev, encoded_data, data_len, position);
+}
+
+//------------------------------------------------------------------------------
+void tm1637_print_str(tm1637* const dev, const char* data, uint8_t data_len,
+                      uint8_t position)
+{
+    uint8_t encoded_data[4];
+
+    _start(dev);
+
+    if ((data_len + position) > TM1637_DISPLAY_MEM)
+    {
+        data_len = (TM1637_DISPLAY_MEM - position);
+    }
+
+    // Encode
+    data_len = _encode_str(encoded_data, data, data_len);
+    // Store
+    _write_data(dev, encoded_data, data_len, position);
+}
+
+
 
 //------------------------------------------------------------------------------
 // @brief PRIVATE FUNCTIONS DEFINITIONS
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-void _init(tm1637* const dev)
-{
-    // Init Serial bus
-    tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
-    tm1637_delay_us(dev, 1);
-
-    tm1637_set_dio(dev, TM1637_PIN_HIGH);
-    tm1637_set_clk(dev, TM1637_PIN_HIGH);
-
-    //init controller
-    dev->display_on_off = TM1637_DSP_ON;
-    dev->brightness = TM1637_BRT_DEF;
-    _write_cmd(dev, TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness);                                 // Display control cmd, display on/off, brightness
-
-    _write_cmd(dev, TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
-}
-
-//------------------------------------------------------------------------------
 void _start(tm1637* const dev)
 {
     tm1637_set_dio(dev, TM1637_PIN_LOW);
-    tm1637_delay_us(dev, 1);
-    tm1637_set_clk(dev, TM1637_PIN_LOW );
-    tm1637_delay_us(dev, 1);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
+    tm1637_set_clk(dev, TM1637_PIN_LOW);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 }
 
 
@@ -382,17 +403,18 @@ void _start(tm1637* const dev)
 void _stop(tm1637* const dev)
 {
     tm1637_set_dio(dev, TM1637_PIN_LOW);
-    tm1637_delay_us(dev, 1);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
     tm1637_set_clk(dev, TM1637_PIN_HIGH);
-    tm1637_delay_us(dev, 1);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
     tm1637_set_dio(dev, TM1637_PIN_HIGH);
-    tm1637_delay_us(dev,1 );
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 }
 
 
 //------------------------------------------------------------------------------
 void _write(tm1637* const dev, uint8_t data)
 {
+    //bool ack = false; // not used
     for (int bit=0; bit<8; bit++)
     {
         //The TM1637 expects LSB first
@@ -404,31 +426,35 @@ void _write(tm1637* const dev, uint8_t data)
         {
             tm1637_set_dio(dev, TM1637_PIN_LOW);
         }
-        tm1637_delay_us(dev, 1);
+        tm1637_delay_us(dev, TM1637_BIT_DELAY);
         tm1637_set_clk(dev, TM1637_PIN_HIGH);
-        tm1637_delay_us(dev, 1);
+        tm1637_delay_us(dev, TM1637_BIT_DELAY);
         tm1637_set_clk(dev, TM1637_PIN_LOW );
-        tm1637_delay_us(dev, 1);
+        tm1637_delay_us(dev, TM1637_BIT_DELAY);
     }
 
     tm1637_set_dio(dev, TM1637_PIN_HIGH);
 
     // Prepare DIO to read data
     tm1637_set_dio_mode(dev, TM1637_DIO_INPUT);
-    tm1637_delay_us(dev, 3);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     // dummy Ack
     tm1637_set_clk(dev, TM1637_PIN_HIGH);
-    tm1637_delay_us(dev, 1);
-    //  _ack = _dio;
-    tm1637_set_clk(dev, TM1637_PIN_LOW );
-    tm1637_delay_us(dev, 1);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
+    //if (tm1637_get_dio(dev) == TM1637_PIN_HIGH)
+    //{
+    //    ack = true;
+    //}
+    tm1637_set_clk(dev, TM1637_PIN_LOW);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     // Return DIO to output mode
     tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
-    tm1637_delay_us(dev, 3);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     tm1637_set_dio(dev, TM1637_PIN_HIGH); //idle
+    //return ack;
 }
 
 //------------------------------------------------------------------------------
@@ -438,7 +464,7 @@ uint8_t _read(tm1637* const dev)
 
     // Prepare DIO to read data
     tm1637_set_dio_mode(dev, TM1637_DIO_INPUT);
-    tm1637_delay_us(dev, 3);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     for (int bit=0; bit<8; bit++)
     {
@@ -450,7 +476,7 @@ uint8_t _read(tm1637* const dev)
         keycode = keycode << 1;
 
         tm1637_set_clk(dev, TM1637_PIN_HIGH);
-        tm1637_delay_us(dev, 1);
+        tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
         // Read next bit
         if (tm1637_get_dio(dev) == TM1637_PIN_HIGH)
@@ -459,27 +485,26 @@ uint8_t _read(tm1637* const dev)
         }
 
         tm1637_set_clk(dev, TM1637_PIN_LOW );
-        tm1637_delay_us(dev, 5); // Delay to allow for slow risetime
+        tm1637_delay_us(dev, 10); // Delay to allow for slow risetime
     }
 
     // Return DIO to output mode
     tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
-    tm1637_delay_us(dev, 3);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     // dummy Ack
     tm1637_set_dio(dev, TM1637_PIN_LOW); //Ack
-    tm1637_delay_us(dev, 1);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     tm1637_set_clk(dev, TM1637_PIN_HIGH);
-    tm1637_delay_us(dev, 1);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
     tm1637_set_clk(dev, TM1637_PIN_LOW);
-    tm1637_delay_us(dev, 1);
+    tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     tm1637_set_dio(dev, TM1637_PIN_HIGH); //idle
 
     return keycode;
 }
-
 
 //------------------------------------------------------------------------------
 void _write_cmd(tm1637* const dev, uint8_t cmd, uint8_t data)
@@ -489,6 +514,68 @@ void _write_cmd(tm1637* const dev, uint8_t cmd, uint8_t data)
     _write(dev, (cmd & TM1637_CMD_MSK) | (data & ~TM1637_CMD_MSK));
 
     _stop(dev);
+}
+
+//------------------------------------------------------------------------------
+void _write_data(tm1637* const dev, const tm1637_display_data data,
+                 uint8_t data_len, uint8_t pos)
+{
+    _start(dev);
+
+    // Sanity check
+    pos &= TM1637_ADDR_MSK;
+
+    if ((data_len + pos) > TM1637_DISPLAY_MEM)
+    {
+        data_len = (TM1637_DISPLAY_MEM - pos);
+    }
+
+    _write(dev, TM1637_ADDR_SET_CMD | pos); // Set Address
+
+    for (int idx = 0; idx < data_len; idx++)
+    {
+        _write(dev, (uint8_t)data[pos + idx]); // data
+    }
+
+    _stop(dev);
+}
+
+//------------------------------------------------------------------------------
+uint8_t _encode(char c)
+{
+    if (c < ' ')  // 32 (ASCII)
+    {
+        return 0;
+    }
+    return FONT_7S[c - ' '];
+};
+
+//------------------------------------------------------------------------------
+uint8_t _encode_str(uint8_t* buf, const char* str, size_t buf_size)
+{
+    uint8_t i;
+
+    for (i=0; i < buf_size; i++)
+    {
+        if (str[i] == '\0' )
+        {
+            return i;
+        }
+        buf[i] = _encode(str[i]);
+    };
+    return i;
+}
+
+//------------------------------------------------------------------------------
+uint8_t _encode_bytes(uint8_t* buf, const uint8_t* data, size_t buf_size)
+{
+    uint8_t i;
+
+    for (i=0; i < buf_size; i++)
+    {
+        buf[i] = _encode((char)data[i]);
+    };
+    return i;
 }
 
 //------------------------------------------------------------------------------
@@ -525,7 +612,7 @@ int _putc(tm1637* const dev, int value)
             addr = (dev->column - 1);
             //Save icons...and set bits for decimal point to write
             dev->display_buffer[addr] = dev->display_buffer[addr] | pattern;
-            tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+            _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
             //No Cursor Update
         }
     }
@@ -553,7 +640,7 @@ int _putc(tm1637* const dev, int value)
         //Save icons...and set bits for character to write
         dev->display_buffer[addr] = (dev->display_buffer[addr] & MASK_ICON_GRID[dev->column]) | pattern;
 
-        tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+        _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
 
         //Update Cursor
         dev->column++;

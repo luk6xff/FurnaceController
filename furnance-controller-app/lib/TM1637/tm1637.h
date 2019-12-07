@@ -23,6 +23,12 @@ extern "C" {
 /**
  * @brief An interface for driving TM1637 LED controller
 */
+
+
+// Segment bit positions for 7 Segment display using the DISPLAY and ROBOTDYN mapping for TM1637
+// Modify this table for different 'bit-to-segment' mappings. The ASCII character defines and the FONT_7S const table below
+// will be adapted automatically according to the bit-to-segment mapping. Obviously this will only work when the segment
+// mapping is identical for every digit position. This will be the case unless the hardware designer really hates software developers.
 //
 //            A
 //          -----
@@ -36,7 +42,6 @@ extern "C" {
 //          -----   * DP
 //            D
 //
-
 #define S7_A    0x0001
 #define S7_B    0x0002
 #define S7_C    0x0004
@@ -218,7 +223,7 @@ extern const char MASK_ICON_GRID[];
 // ASCII Font definition table
 #define FONT_7S_START     0x20
 #define FONT_7S_END       0x7F
-extern const short FONT_7S[];
+extern const uint16_t FONT_7S[];
 
 
 //TM1637 Display data
@@ -288,6 +293,9 @@ extern const short FONT_7S[];
 
 #define TM1637_SW_NONE      0xFF
 
+// BIT DELAY microseconds, check what works on your HW
+#define TM1637_BIT_DELAY  20
+
 
 // Modify for your screen
 #define DISPLAY_NR_GRIDS  4
@@ -319,13 +327,13 @@ typedef enum
 } tm1637_pin_state;
 
 /** Datatype for displaydata */
-typedef char tm1637_display_data[TM1637_DISPLAY_MEM];
+typedef uint8_t tm1637_display_data[TM1637_DISPLAY_MEM];
 
 /** Datatype for user defined chars */
-typedef char tm1637_udc_data[DISPLAY_NR_UDC];
+typedef uint8_t tm1637_udc_data[DISPLAY_NR_UDC];
 
 /** Datatypes for keymatrix data */
-typedef char tm1637_key_data;
+typedef uint8_t tm1637_key_data;
 
 
 /** TM1637 dev object **/
@@ -360,23 +368,6 @@ void tm1637_init(tm1637* const dev);
  * @brief Clear the screen and locate to 0
  */
 void tm1637_clear(tm1637* const dev);
-
-/**
- * @brief  Write databyte to TM1637
- * @param  char data byte written at given address
- * @param  int address display memory location to write byte
- * @return none
- */
-//void tm1637_write_data(char data, int address);
-
-/**
- * @brief  Write Display datablock to TM1637
- * @param  tm1637_display_data data Array of TM1637_DISPLAY_MEM (=4) bytes for displaydata
- * @param  length number bytes to write (valid range 0..(DISPLAY_NR_GRIDS * TM1637_BYTES_PER_GRID_NUM) (=4), when starting at address 0)
- * @param  int address display memory location to write bytes (default = 0)
- * @return none
- */
-void tm1637_write_data(tm1637* const dev, tm1637_display_data data, int length, int address);
 
 /**
  * @brief  Read keydata block from TM1637
@@ -441,6 +432,22 @@ void tm1637_set_udc(tm1637* const dev, uint8_t udc_idx, int udc_data);
 */
 int tm1637_columns(const tm1637* const dev);
 
+
+/**
+ * @brief Print raw data on the display
+ *
+ * @return success status
+*/
+void tm1637_print_raw(tm1637* const dev, const uint8_t* data, uint8_t data_len,
+                      uint8_t position);
+
+/**
+ * @brief Print string on the display
+ *
+ * @return success status
+*/
+void tm1637_print_str(tm1637* const dev, const char* data, uint8_t data_len,
+                      uint8_t position);
 
 
 
