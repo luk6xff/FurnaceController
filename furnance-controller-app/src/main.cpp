@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "../lib/DS1820/platform/mbed/ds1820-mbed.h"
 #include "../lib/DS3231/platform/mbed/ds3231-mbed.h"
-#include "../lib/TM1637/TM1637.h"
+#include "../lib/TM1637/platform/mbed/tm1637-mbed.h"
 
 
 
@@ -19,36 +19,37 @@ int main()
     // TM1637
     #define LED_DIO PA_0
     #define LED_CLK PA_5
-    TM1637::DisplayData_t all_str  = {0xFF, 0xFF, 0xFF, 0xFF};
-    TM1637 display(LED_DIO, LED_CLK);      //F401
-    display.cls();
-    display.writeData(all_str);
+    tm1637 disp;
+    tm1637_display_data all_str  = {0xFF, 0xFF, 0xFF, 0xFF};
+    tm1637_mbed_init(&disp, LED_DIO, LED_CLK);
+    tm1637_clear();
+    tm1637_write_data(all_str, sizeof(all_str), 0);
     wait_ms(1000);
-    display.setBrightness(TM1637_BRT0);
+    tm1637_set_brightness(&disp, TM1637_BRT0);
     wait_ms(500);
-    display.setBrightness(TM1637_BRT1);
+    tm1637_set_brightness(&disp, TM1637_BRT1);
     wait_ms(500);
-    display.setBrightness(TM1637_BRT2);
+    tm1637_set_brightness(&disp, TM1637_BRT2);
     wait_ms(500);
-    display.setBrightness(TM1637_BRT3);
+    tm1637_set_brightness(&disp, TM1637_BRT3);
     wait_ms(500);
-    display.setBrightness(TM1637_BRT4);
+    tm1637_set_brightness(&disp, TM1637_BRT4);
     wait_ms(500);
-    display.setBrightness(TM1637_BRT5);
+    tm1637_set_brightness(&disp, TM1637_BRT5);
     wait_ms(500);
-    display.setBrightness(TM1637_BRT6);
+    tm1637_set_brightness(&disp, TM1637_BRT6);
     wait_ms(500);
-    display.setBrightness(TM1637_BRT7);
+    tm1637_set_brightness(&disp, TM1637_BRT7);
     wait_ms(500);
-    display.cls();
+    tm1637_clear();
     wait_ms(1000);
-    display.setBrightness(TM1637_BRT3);
-    display.writeData(all_str);
+    tm1637_set_brightness(&disp, TM1637_BRT3);
+    tm1637_write_data(all_str, sizeof(all_str), 0);
     wait_ms(1000);
-    display.cls();
-    display.printf(" HI ");
+    tm1637_clear();
+    //display.printf(" HI ");
     wait_ms(2000);
-    display.printf("GIT!");
+    //display.printf("GIT!");
 
     // DS18B20
     const int MAX_SENSORS = 16;
@@ -82,8 +83,8 @@ int main()
                 debug("%3.1f\r\n",temp);
                 char buf[4];
                 sprintf(buf, "%2.1f*",temp);
-                display.cls();
-                display.printf("%s", buf);
+                tm1637_clear();
+                //display.printf("%s", buf);
                 wait_ms(2000);
             }
         }
