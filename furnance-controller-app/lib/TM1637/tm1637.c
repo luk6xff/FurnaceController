@@ -14,104 +14,104 @@ const char MASK_ICON_GRID[] = {
                               };
 
 // ASCII Font definition mapping table for transmission to TM1637
-const uint16_t FONT_7S[] =
+const uint16_t TM1637_FONT[] =
 {
-    C7_SPC, //32 0x20, Space
-    C7_EXC,
-    C7_QTE,
-    C7_HSH,
-    C7_DLR,
-    C7_PCT,
-    C7_AMP,
-    C7_ACC,
-    C7_LBR,
-    C7_RBR,
-    C7_MLT,
-    C7_PLS,
-    C7_CMA,
-    C7_MIN,
-    C7_DPT,
-    C7_RS,
-    C7_0,   //48 0x30
-    C7_1,
-    C7_2,
-    C7_3,
-    C7_4,
-    C7_5,
-    C7_6,
-    C7_7,
-    C7_8,
-    C7_9,
-    C7_COL, //58 0x3A
-    C7_SCL,
-    C7_LT,
-    C7_EQ,
-    C7_GT,
-    C7_QM,
-    C7_AT,  //64 0x40
-    C7_A,   //65 0x41, A
-    C7_B,
-    C7_C,
-    C7_D,
-    C7_E,
-    C7_F,
-    C7_G,
-    C7_H,
-    C7_I,
-    C7_J,
-    C7_K,
-    C7_L,
-    C7_M,
-    C7_N,
-    C7_O,
-    C7_P,
-    C7_Q,
-    C7_R,
-    C7_S,
-    C7_T,
-    C7_U,
-    C7_V,
-    C7_W,
-    C7_X,
-    C7_Y,
-    C7_Z,   //90 0x5A, Z
-    C7_SBL, //91 0x5B
-    C7_LS,
-    C7_SBR,
-    C7_PWR,
-    C7_UDS,
-    C7_ACC,
-    C7_A,   //97 0x61, A replacing a
-    C7_B,
-    C7_C,
-    C7_D,
-    C7_E,
-    C7_F,
-    C7_G,
-    C7_H,
-    C7_I,
-    C7_J,
-    C7_K,
-    C7_L,
-    C7_M,
-    C7_N,
-    C7_O,
-    C7_P,
-    C7_Q,
-    C7_R,
-    C7_S,
-    C7_T,
-    C7_U,
-    C7_V,
-    C7_W,
-    C7_X,
-    C7_Y,
-    C7_Z,   // 122 0x7A, Z replacing z
-    C7_CBL, // 123 0x7B
-    C7_OR,
-    C7_CBR,
-    C7_TLD,
-    C7_DEL  // 127
+    TM1637_CHAR_SPC, //32 0x20, Space
+    TM1637_CHAR_EXC,
+    TM1637_CHAR_QTE,
+    TM1637_CHAR_HSH,
+    TM1637_CHAR_DLR,
+    TM1637_CHAR_PCT,
+    TM1637_CHAR_AMP,
+    TM1637_CHAR_ACC,
+    TM1637_CHAR_LBR,
+    TM1637_CHAR_RBR,
+    TM1637_CHAR_MLT,
+    TM1637_CHAR_PLS,
+    TM1637_CHAR_CMA,
+    TM1637_CHAR_MIN,
+    TM1637_CHAR_DPT,
+    TM1637_CHAR_RS,
+    TM1637_CHAR_0,   //48 0x30
+    TM1637_CHAR_1,
+    TM1637_CHAR_2,
+    TM1637_CHAR_3,
+    TM1637_CHAR_4,
+    TM1637_CHAR_5,
+    TM1637_CHAR_6,
+    TM1637_CHAR_7,
+    TM1637_CHAR_8,
+    TM1637_CHAR_9,
+    TM1637_CHAR_COL, //58 0x3A
+    TM1637_CHAR_SCL,
+    TM1637_CHAR_LT,
+    TM1637_CHAR_EQ,
+    TM1637_CHAR_GT,
+    TM1637_CHAR_QM,
+    TM1637_CHAR_AT,  //64 0x40
+    TM1637_CHAR_A,   //65 0x41, A
+    TM1637_CHAR_B,
+    TM1637_CHAR_C,
+    TM1637_CHAR_D,
+    TM1637_CHAR_E,
+    TM1637_CHAR_F,
+    TM1637_CHAR_G,
+    TM1637_CHAR_H,
+    TM1637_CHAR_I,
+    TM1637_CHAR_J,
+    TM1637_CHAR_K,
+    TM1637_CHAR_L,
+    TM1637_CHAR_M,
+    TM1637_CHAR_N,
+    TM1637_CHAR_O,
+    TM1637_CHAR_P,
+    TM1637_CHAR_Q,
+    TM1637_CHAR_R,
+    TM1637_CHAR_S,
+    TM1637_CHAR_T,
+    TM1637_CHAR_U,
+    TM1637_CHAR_V,
+    TM1637_CHAR_W,
+    TM1637_CHAR_X,
+    TM1637_CHAR_Y,
+    TM1637_CHAR_Z,   //90 0x5A, Z
+    TM1637_CHAR_SBL, //91 0x5B
+    TM1637_CHAR_LS,
+    TM1637_CHAR_SBR,
+    TM1637_CHAR_PWR,
+    TM1637_CHAR_UDS,
+    TM1637_CHAR_ACC,
+    TM1637_CHAR_a,   //97 0x61, A replacing a
+    TM1637_CHAR_b,
+    TM1637_CHAR_c,
+    TM1637_CHAR_d,
+    TM1637_CHAR_e,
+    TM1637_CHAR_f,
+    TM1637_CHAR_g,
+    TM1637_CHAR_h,
+    TM1637_CHAR_i,
+    TM1637_CHAR_j,
+    TM1637_CHAR_k,
+    TM1637_CHAR_l,
+    TM1637_CHAR_m,
+    TM1637_CHAR_n,
+    TM1637_CHAR_o,
+    TM1637_CHAR_p,
+    TM1637_CHAR_q,
+    TM1637_CHAR_r,
+    TM1637_CHAR_s,
+    TM1637_CHAR_t,
+    TM1637_CHAR_u,
+    TM1637_CHAR_v,
+    TM1637_CHAR_w,
+    TM1637_CHAR_x,
+    TM1637_CHAR_y,
+    TM1637_CHAR_z,
+    TM1637_CHAR_CBL, // 123 0x7B
+    TM1637_CHAR_OR,
+    TM1637_CHAR_CBR,
+    TM1637_CHAR_TLD,
+    TM1637_CHAR_DEL  // 127
 };
 
 //------------------------------------------------------------------------------
@@ -188,12 +188,6 @@ static uint8_t _encode_str(uint8_t* buf, const char* str, size_t buf_size);
  * @param [in] buf_size   The size/length of the buffer
  */
 static uint8_t _encode_bytes(uint8_t* buf, const uint8_t* data, size_t buf_size);
-
-/**
- * @brief Write a single character
- */
-static int _putc(tm1637* const dev, int value);
-
 
 
 //------------------------------------------------------------------------------
@@ -547,7 +541,7 @@ uint8_t _encode(char c)
     {
         return 0;
     }
-    return FONT_7S[c - ' '];
+    return TM1637_FONT[c - ' '];
 };
 
 //------------------------------------------------------------------------------
@@ -579,78 +573,80 @@ uint8_t _encode_bytes(uint8_t* buf, const uint8_t* data, size_t buf_size)
 }
 
 //------------------------------------------------------------------------------
-int _putc(tm1637* const dev, int value)
+void tm1637_printf(tm1637* const dev, const uint8_t* data, size_t data_size)
 {
     //The DISPLAY mapping between Digit positions (Left to Right) and Grids is:
     //  GR1 GR2 GR3 GR4
     //The memory addresses or column numbers are:
     //   0   1   2   3
 
-    int addr;
-    bool validChar = false;
-    char pattern   = 0x00;
-
-    if ((value == '\n') || (value == '\r'))
+    for (int i = 0; i < data_size; i++)
     {
-      //No character to write
-      validChar = false;
+        int value = data[i];
+        int addr;
+        bool validChar = false;
+        char pattern   = 0x00;
 
-      //Update Cursor
-      dev->column = 0;
-    }
-    else if ((value == '.') || (value == ','))
-    {
-        //No character to write
-        validChar = false;
-        pattern = S7_DP; // placeholder for all DPs
-
-        // Check to see that DP can be shown for current column
-        if (dev->column > 0)
+        if ((value == '\n') || (value == '\r'))
         {
-            //Translate between dev->column and displaybuffer entries
-            //Add DP to bitpattern of digit left of current column.
-            addr = (dev->column - 1);
-            //Save icons...and set bits for decimal point to write
-            dev->display_buffer[addr] = dev->display_buffer[addr] | pattern;
-            _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
-            //No Cursor Update
-        }
-    }
-    else if ((value >= 0) && (value < DISPLAY_NR_UDC))
-    {
-        //Character to write
-        validChar = true;
-        pattern = dev->ud_chars[value];
-    }
+            //No character to write
+            validChar = false;
 
-    //Display all ASCII characters
-    else if ((value >= FONT_7S_START) && (value <= FONT_7S_END))
-    {
-        //Character to write
-        validChar = true;
-        pattern = FONT_7S[value - FONT_7S_START];
-    }
-
-    if (validChar)
-    {
-        //Character to write
-        //Translate between dev->column and displaybuffer entries
-        addr = dev->column;
-
-        //Save icons...and set bits for character to write
-        dev->display_buffer[addr] = (dev->display_buffer[addr] & MASK_ICON_GRID[dev->column]) | pattern;
-
-        _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
-
-        //Update Cursor
-        dev->column++;
-        if (dev->column > (DISPLAY_NR_DIGITS - 1))
-        {
+            //Update Cursor
             dev->column = 0;
         }
-    } // if validChar
+        else if ((value == '.') || (value == ','))
+        {
+            //No character to write
+            validChar = false;
+            pattern = S7_DP; // placeholder for all DPs
 
-    return value;
+            // Check to see that DP can be shown for current column
+            if (dev->column > 0)
+            {
+                //Translate between dev->column and displaybuffer entries
+                //Add DP to bitpattern of digit left of current column.
+                addr = (dev->column - 1);
+                //Save icons...and set bits for decimal point to write
+                dev->display_buffer[addr] = dev->display_buffer[addr] | pattern;
+                _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+                //No Cursor Update
+            }
+        }
+        else if ((value >= 0) && (value < DISPLAY_NR_UDC))
+        {
+            //Character to write
+            validChar = true;
+            pattern = dev->ud_chars[value];
+        }
+
+        //Display all ASCII characters
+        else if ((value >= TM1637_FONT_START) && (value <= TM1637_FONT_END))
+        {
+            //Character to write
+            validChar = true;
+            pattern = TM1637_FONT[value - TM1637_FONT_START];
+        }
+
+        if (validChar)
+        {
+            //Character to write
+            //Translate between dev->column and displaybuffer entries
+            addr = dev->column;
+
+            //Save icons...and set bits for character to write
+            dev->display_buffer[addr] = (dev->display_buffer[addr] & MASK_ICON_GRID[dev->column]) | pattern;
+
+            _write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+
+            //Update Cursor
+            dev->column++;
+            if (dev->column > (DISPLAY_NR_DIGITS - 1))
+            {
+                dev->column = 0;
+            }
+        } // if validChar
+    }
 }
 
 //------------------------------------------------------------------------------

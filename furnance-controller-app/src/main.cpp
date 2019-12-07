@@ -23,13 +23,15 @@ int main()
     #define LED_CLK PA_5
     tm1637_mbed disp_mbed = { DigitalInOut(LED_DIO), DigitalOut(LED_CLK) };
     tm1637 disp;
-    const char str[]  = {"HI-L"};
+    const char str[]  = {"HI.L"};
     const uint8_t raw[]  = {0x31, 0x32, 0x33, 0x34};
     tm1637_mbed_init(&disp, &disp_mbed);
     tm1637_clear(&disp);
     tm1637_print_str(&disp, str, sizeof(str), 0);
     wait_us(1000*2000);
     tm1637_print_raw(&disp, raw, sizeof(raw), 0);
+    wait_us(1000*2000);
+    tm1637_printf(&disp, (const uint8_t*)str, sizeof(str));
     tm1637_set_brightness(&disp, TM1637_BRT0);
     wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT1);
@@ -56,7 +58,6 @@ int main()
     // DS18B20
     const int MAX_SENSORS = 16;
     #define DS18B20_DATA_PIN PE_12
-    int i;
     int devices_found=0;
     ds1820_mbed_init(DS18B20_DATA_PIN, NC);
     // Initialize global state variables
@@ -77,7 +78,7 @@ int main()
         {
             ds1820_convert_temperature(ALL);
 
-            for (i=0; i<devices_found; i++)
+            for (int i=0; i<devices_found; i++)
             {
                 float temp = ds1820_read_temperature(CELSIUS);
                 debug("%3.1f\r\n",temp);

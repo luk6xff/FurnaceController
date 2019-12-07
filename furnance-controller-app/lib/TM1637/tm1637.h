@@ -26,7 +26,7 @@ extern "C" {
 
 
 // Segment bit positions for 7 Segment display using the DISPLAY and ROBOTDYN mapping for TM1637
-// Modify this table for different 'bit-to-segment' mappings. The ASCII character defines and the FONT_7S const table below
+// Modify this table for different 'bit-to-segment' mappings. The ASCII character defines and the TM1637_FONT const table below
 // will be adapted automatically according to the bit-to-segment mapping. Obviously this will only work when the segment
 // mapping is identical for every digit position. This will be the case unless the hardware designer really hates software developers.
 //
@@ -97,123 +97,120 @@ extern const char MASK_ICON_GRID[];
 // ASCII Font definitions for segments in each character
 //
 //32 0x20  Symbols
-#define C7_SPC  (0x0000)
-#define C7_EXC  (S7_B | S7_C) //!
-#define C7_QTE  (S7_B | S7_F) //"
-#define C7_HSH  (S7_C | S7_D | S7_E | S7_G) //#
-#define C7_DLR  (S7_A | S7_C | S7_D | S7_F | S7_G) //$
-#define C7_PCT  (S7_C | S7_F) //%
-#define C7_AMP  (S7_A | S7_C | S7_D | S7_E | S7_F | S7_G) //&
-#define C7_ACC  (S7_B) //'
-#define C7_LBR  (S7_A | S7_D | S7_E | S7_F) //(
-#define C7_RBR  (S7_A | S7_B | S7_C | S7_D) //)
-#define C7_MLT  (S7_B | S7_C | S7_E | S7_F | S7_G)  //*
-#define C7_PLS  (S7_B | S7_C | S7_G) //+
-#define C7_CMA  (S7_DP)
-#define C7_MIN  (S7_G)
-#define C7_DPT  (S7_DP)
-#define C7_RS   (S7_B | S7_E  | S7_G)  // /
+#define TM1637_CHAR_SPC  (0x0000)
+#define TM1637_CHAR_EXC  (S7_B | S7_C) //!
+#define TM1637_CHAR_QTE  (S7_B | S7_F) //"
+#define TM1637_CHAR_HSH  (S7_C | S7_D | S7_E | S7_G) //#
+#define TM1637_CHAR_DLR  (S7_A | S7_C | S7_D | S7_F | S7_G) //$
+#define TM1637_CHAR_PCT  (S7_C | S7_F) //%
+#define TM1637_CHAR_AMP  (S7_A | S7_C | S7_D | S7_E | S7_F | S7_G) //&
+#define TM1637_CHAR_ACC  (S7_B) //'
+#define TM1637_CHAR_LBR  (S7_A | S7_D | S7_E | S7_F) //(
+#define TM1637_CHAR_RBR  (S7_A | S7_B | S7_C | S7_D) //)
+#define TM1637_CHAR_MLT  (S7_B | S7_C | S7_E | S7_F | S7_G)  //*
+#define TM1637_CHAR_PLS  (S7_B | S7_C | S7_G) //+
+#define TM1637_CHAR_CMA  (S7_DP)
+#define TM1637_CHAR_MIN  (S7_G)
+#define TM1637_CHAR_DPT  (S7_DP)
+#define TM1637_CHAR_RS   (S7_B | S7_E  | S7_G)  // /
 
 //48 0x30  Digits
-#define C7_0    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F)
-#define C7_1    (S7_B | S7_C)
-#define C7_2    (S7_A | S7_B | S7_D | S7_E | S7_G)
-#define C7_3    (S7_A | S7_B | S7_C | S7_D | S7_G)
-#define C7_4    (S7_B | S7_C | S7_F | S7_G)
-#define C7_5    (S7_A | S7_C | S7_D | S7_F | S7_G)
-#define C7_6    (S7_A | S7_C | S7_D | S7_E | S7_F | S7_G)
-#define C7_7    (S7_A | S7_B | S7_C)
-#define C7_8    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F | S7_G)
-#define C7_9    (S7_A | S7_B | S7_C | S7_D | S7_F | S7_G)
+#define TM1637_CHAR_0    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F)
+#define TM1637_CHAR_1    (S7_B | S7_C)
+#define TM1637_CHAR_2    (S7_A | S7_B | S7_D | S7_E | S7_G)
+#define TM1637_CHAR_3    (S7_A | S7_B | S7_C | S7_D | S7_G)
+#define TM1637_CHAR_4    (S7_B | S7_C | S7_F | S7_G)
+#define TM1637_CHAR_5    (S7_A | S7_C | S7_D | S7_F | S7_G)
+#define TM1637_CHAR_6    (S7_A | S7_C | S7_D | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_7    (S7_A | S7_B | S7_C)
+#define TM1637_CHAR_8    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_9    (S7_A | S7_B | S7_C | S7_D | S7_F | S7_G)
 
 //58 0x3A
-#define C7_COL  (S7_D | S7_G) // :
-#define C7_SCL  (S7_D | S7_G) // ;
-#define C7_LT   (S7_D | S7_E | S7_G)             // <
-#define C7_EQ   (S7_D | S7_G)                    // =
-#define C7_GT   (S7_C | S7_D | S7_G)             // >
-#define C7_QM   (S7_A | S7_B | S7_E | S7_G)      // ?
-#define C7_AT   (S7_A | S7_B | S7_C | S7_D | S7_E  | S7_G)  // @
+#define TM1637_CHAR_COL  (S7_D | S7_G) // :
+#define TM1637_CHAR_SCL  (S7_D | S7_G) // ;
+#define TM1637_CHAR_LT   (S7_D | S7_E | S7_G)             // <
+#define TM1637_CHAR_EQ   (S7_D | S7_G)                    // =
+#define TM1637_CHAR_GT   (S7_C | S7_D | S7_G)             // >
+#define TM1637_CHAR_QM   (S7_A | S7_B | S7_E | S7_G)      // ?
+#define TM1637_CHAR_AT   (S7_A | S7_B | S7_C | S7_D | S7_E  | S7_G)  // @
 
 //65 0x41  Upper case alphabet
-#define C7_A    (S7_A | S7_B | S7_C | S7_E | S7_F | S7_G )
-#define C7_B    (S7_C | S7_D | S7_E | S7_F | S7_G)
-#define C7_C    (S7_A | S7_D | S7_E | S7_F)
-#define C7_D    (S7_B | S7_C | S7_D | S7_E | S7_G)
-#define C7_E    (S7_A | S7_D | S7_E | S7_F | S7_G)
-#define C7_F    (S7_A | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_A    (S7_A | S7_B | S7_C | S7_E | S7_F | S7_G )
+#define TM1637_CHAR_B    (S7_C | S7_D | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_C    (S7_A | S7_D | S7_E | S7_F)
+#define TM1637_CHAR_D    (S7_B | S7_C | S7_D | S7_E | S7_G)
+#define TM1637_CHAR_E    (S7_A | S7_D | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_F    (S7_A | S7_E | S7_F | S7_G)
 
-#define C7_G    (S7_A | S7_C | S7_D | S7_E | S7_F)
-#define C7_H    (S7_B | S7_C | S7_E | S7_F | S7_G)
-#define C7_I    (S7_B | S7_C)
-#define C7_J    (S7_B | S7_C | S7_D | S7_E)
-#define C7_K    (S7_B | S7_C | S7_E | S7_F | S7_G)
-#define C7_L    (S7_D | S7_E | S7_F)
-#define C7_M    (S7_A | S7_C | S7_E)
-#define C7_N    (S7_A | S7_B | S7_C | S7_E | S7_F)
-#define C7_O    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F)
-#define C7_P    (S7_A | S7_B | S7_E | S7_F | S7_G)
-#define C7_Q    (S7_A | S7_B | S7_C | S7_F | S7_G)
-#define C7_R    (S7_E | S7_G )
-#define C7_S    (S7_A | S7_C | S7_D | S7_F | S7_G)
-#define C7_T    (S7_D | S7_E | S7_F | S7_G)
-#define C7_U    (S7_B | S7_C | S7_D | S7_E | S7_F)
-#define C7_V    (S7_B | S7_C | S7_D | S7_E | S7_F)
-#define C7_W    (S7_B | S7_D | S7_F)
-#define C7_X    (S7_B | S7_C | S7_E | S7_F | S7_G)
-#define C7_Y    (S7_B | S7_C | S7_D | S7_F | S7_G)
-#define C7_Z    (S7_A | S7_B | S7_D | S7_E | S7_G)
+#define TM1637_CHAR_G    (S7_A | S7_C | S7_D | S7_E | S7_F)
+#define TM1637_CHAR_H    (S7_B | S7_C | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_I    (S7_B | S7_C)
+#define TM1637_CHAR_J    (S7_B | S7_C | S7_D | S7_E)
+#define TM1637_CHAR_K    (S7_B | S7_C | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_L    (S7_D | S7_E | S7_F)
+#define TM1637_CHAR_M    (S7_A | S7_C | S7_E)
+#define TM1637_CHAR_N    (S7_A | S7_B | S7_C | S7_E | S7_F)
+#define TM1637_CHAR_O    (S7_A | S7_B | S7_C | S7_D | S7_E | S7_F)
+#define TM1637_CHAR_P    (S7_A | S7_B | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_Q    (S7_A | S7_B | S7_C | S7_F | S7_G)
+#define TM1637_CHAR_R    (S7_E | S7_G )
+#define TM1637_CHAR_S    (S7_A | S7_C | S7_D | S7_F | S7_G)
+#define TM1637_CHAR_T    (S7_D | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_U    (S7_B | S7_C | S7_D | S7_E | S7_F)
+#define TM1637_CHAR_V    (S7_B | S7_C | S7_D | S7_E | S7_F)
+#define TM1637_CHAR_W    (S7_B | S7_D | S7_F)
+#define TM1637_CHAR_X    (S7_B | S7_C | S7_E | S7_F | S7_G)
+#define TM1637_CHAR_Y    (S7_B | S7_C | S7_D | S7_F | S7_G)
+#define TM1637_CHAR_Z    (S7_A | S7_B | S7_D | S7_E | S7_G)
 
 //91 0x5B
-#define C7_SBL  (S7_A | S7_D | S7_E | S7_F) // [
-#define C7_LS   (S7_C | S7_F | S7_G)        // left slash
-#define C7_SBR  (S7_A | S7_B | S7_C | S7_D) // ]
-#define C7_PWR  (S7_A | S7_B | S7_F)        // ^
-#define C7_UDS  (S7_D)                      // _
-#define C7_DSH  (S7_F)                      // `
+#define TM1637_CHAR_SBL  (S7_A | S7_D | S7_E | S7_F) // [
+#define TM1637_CHAR_LS   (S7_C | S7_F | S7_G)        // left slash
+#define TM1637_CHAR_SBR  (S7_A | S7_B | S7_C | S7_D) // ]
+#define TM1637_CHAR_PWR  (S7_A | S7_B | S7_F)        // ^
+#define TM1637_CHAR_UDS  (S7_D)                      // _
+#define TM1637_CHAR_DSH  (S7_F)                      // `
 
 //97 0x61  Lower case alphabet
-#define C7_a     C7_A
-#define C7_b     C7_B
-#define C7_c     C7_C
-#define C7_d     C7_D
-#define C7_e     C7_E
-#define C7_f     C7_H
+#define TM1637_CHAR_a     TM1637_CHAR_A
+#define TM1637_CHAR_b     TM1637_CHAR_B
+#define TM1637_CHAR_c     TM1637_CHAR_C
+#define TM1637_CHAR_d     TM1637_CHAR_D
+#define TM1637_CHAR_e     TM1637_CHAR_E
+#define TM1637_CHAR_f     TM1637_CHAR_H
 
-#define C7_g     C7_G
-#define C7_h     C7_H
-#define C7_i     C7_I
-#define C7_j     C7_J
-#define C7_k     C7_K
-#define C7_l     C7_L
-#define C7_m     C7_M
-//#define C7_n     C7_N
-#define C7_n    (S7_C | S7_E | S7_G)
-//#define C7_o     C7_O
-#define C7_o    (S7_C | S7_D | S7_E | S7_G)
-#define C7_p     C7_P
-#define C7_q     C7_Q
-//#define C7_r     C7_R
-#define C7_r    (S7_E | S7_G)
-#define C7_s     C7_S
-#define C7_t     C7_T
-#define C7_u     C7_U
-#define C7_v     C7_V
-#define C7_w     C7_W
-#define C7_x     C7_X
-#define C7_y     C7_Y
-#define C7_z     C7_Z
+#define TM1637_CHAR_g     TM1637_CHAR_G
+#define TM1637_CHAR_h     TM1637_CHAR_H
+#define TM1637_CHAR_i     TM1637_CHAR_I
+#define TM1637_CHAR_j     TM1637_CHAR_J
+#define TM1637_CHAR_k     TM1637_CHAR_K
+#define TM1637_CHAR_l     TM1637_CHAR_L
+#define TM1637_CHAR_m     TM1637_CHAR_M
+#define TM1637_CHAR_n    (S7_C | S7_E | S7_G)
+#define TM1637_CHAR_o    (S7_C | S7_D | S7_E | S7_G)
+#define TM1637_CHAR_p     TM1637_CHAR_P
+#define TM1637_CHAR_q     TM1637_CHAR_Q
+#define TM1637_CHAR_r    (S7_E | S7_G)
+#define TM1637_CHAR_s     TM1637_CHAR_S
+#define TM1637_CHAR_t     TM1637_CHAR_T
+#define TM1637_CHAR_u     TM1637_CHAR_U
+#define TM1637_CHAR_v     TM1637_CHAR_V
+#define TM1637_CHAR_w     TM1637_CHAR_W
+#define TM1637_CHAR_x     TM1637_CHAR_X
+#define TM1637_CHAR_y     TM1637_CHAR_Y
+#define TM1637_CHAR_z     TM1637_CHAR_Z
 
 //123 0x7B
-#define C7_CBL  (S7_A | S7_D | S7_E | S7_F)        // {
-#define C7_OR   (S7_B | S7_C)                      // |
-#define C7_CBR  (S7_A | S7_B | S7_C | S7_D)        // }
-#define C7_TLD  (S7_B | S7_E | S7_G )              // ~
-#define C7_DEL  (0x0000)
+#define TM1637_CHAR_CBL  (S7_A | S7_D | S7_E | S7_F)        // {
+#define TM1637_CHAR_OR   (S7_B | S7_C)                      // |
+#define TM1637_CHAR_CBR  (S7_A | S7_B | S7_C | S7_D)        // }
+#define TM1637_CHAR_TLD  (S7_B | S7_E | S7_G )              // ~
+#define TM1637_CHAR_DEL  (0x0000)
 
 
 //User Defined Characters (some examples)
-#define C7_DGR   (S7_A | S7_B | S7_F | S7_G)  //Degrees
+#define TM1637_CHAR_DGR   (S7_A | S7_B | S7_F | S7_G)  //Degrees
 
 // Font data selection for transmission to TM1637 memory
 #define LO(x)  ( x & 0xFF)
@@ -221,9 +218,9 @@ extern const char MASK_ICON_GRID[];
 
 
 // ASCII Font definition table
-#define FONT_7S_START     0x20
-#define FONT_7S_END       0x7F
-extern const uint16_t FONT_7S[];
+#define TM1637_FONT_START     0x20
+#define TM1637_FONT_END       0x7F
+extern const uint16_t TM1637_FONT[];
 
 
 //TM1637 Display data
@@ -450,6 +447,7 @@ void tm1637_print_str(tm1637* const dev, const char* data, uint8_t data_len,
                       uint8_t position);
 
 
+void tm1637_printf(tm1637* const dev, const uint8_t* data, size_t data_size);
 
 //-----------------------------------------------------------------------------
 // @brief HW DEPENDENT FUNCTIONS - must be defined for each platform
