@@ -41,8 +41,8 @@ uint8_t bcd_2_uchar(uint8_t bcd);
 //------------------------------------------------------------------------------
 void ds3231_init(uint8_t i2c_addr)
 {
-     w_adrs = ((DS3231_I2C_ADRS << 1) | I2C_WRITE);
-     r_adrs = ((DS3231_I2C_ADRS << 1) | I2C_READ);
+     w_adrs = ((i2c_addr << 1) | I2C_WRITE);
+     r_adrs = ((i2c_addr << 1) | I2C_READ);
 }
 
 //------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ uint16_t ds3231_set_time(ds3231_time_t time)
     }
     else
     {
-        return(ds3231_write(w_adrs,(const char*) data, data_length));
+        return(ds3231_write(w_adrs, data, data_length));
     }
 }
 
@@ -109,7 +109,7 @@ uint16_t ds3231_set_calendar(ds3231_calendar_t calendar)
     }
     else
     {
-        return(ds3231_write(w_adrs,(const char*) data, data_length));
+        return(ds3231_write(w_adrs, data, data_length));
     }
 }
 
@@ -238,7 +238,7 @@ uint16_t ds3231_set_alarm(ds3231_alrm_t alarm, bool one_r_two)
     }
     else
     {
-        return(ds3231_write(w_adrs,(const char*) data, data_length));
+        return(ds3231_write(w_adrs, data, data_length));
     }
 }
 
@@ -253,7 +253,7 @@ uint16_t ds3231_set_cntl_stat_reg(ds3231_cntl_stat_t data)
     local_data[data_length++] = data.status;
 
     //users responsibility to make sure data is logical
-    return(ds3231_write(w_adrs,(const char*) local_data, data_length));
+    return(ds3231_write(w_adrs, local_data, data_length));
 }
 
 //------------------------------------------------------------------------------
@@ -263,11 +263,11 @@ uint16_t ds3231_get_time(ds3231_time_t* time)
     uint8_t data[3];
 
     data[0] = SECONDS;
-    rtn_val = ds3231_write(w_adrs, (const char*) data, 1);
+    rtn_val = ds3231_write(w_adrs, data, 1);
 
     if(!rtn_val)
     {
-        rtn_val = ds3231_read(r_adrs,(char *) data, 3);
+        rtn_val = ds3231_read(r_adrs, data, 3);
 
         time->seconds = bcd_2_uchar(data[0]);
         time->minutes = bcd_2_uchar(data[1]);
@@ -294,11 +294,11 @@ uint16_t ds3231_get_calendar(ds3231_calendar_t* calendar)
     uint8_t data[4];
 
     data[0] = DAY;
-    rtn_val = ds3231_write(w_adrs, (const char*) data, 1);
+    rtn_val = ds3231_write(w_adrs, data, 1);
 
     if(!rtn_val)
     {
-        rtn_val = ds3231_read(r_adrs,(char *) data, 4);
+        rtn_val = ds3231_read(r_adrs, data, 4);
 
         calendar->day = bcd_2_uchar(data[0]);
         calendar->date = bcd_2_uchar(data[1]);
@@ -321,7 +321,6 @@ uint16_t ds3231_get_calendar(ds3231_calendar_t* calendar)
             day_of_week -= 7;
         }
         calendar->day = day_of_week;
-        //
     }
 
     return(rtn_val);
@@ -336,11 +335,11 @@ uint16_t ds3231_get_alarm(ds3231_alrm_t* alarm, bool one_r_two)
     if(one_r_two)
     {
         data[0] = ALRM1_SECONDS;
-        rtn_val = ds3231_write(w_adrs, (const char*) data, 1);
+        rtn_val = ds3231_write(w_adrs, data, 1);
 
         if(!rtn_val)
         {
-            rtn_val = ds3231_read(r_adrs,(char *) data, 4);
+            rtn_val = ds3231_read(r_adrs,data, 4);
 
             alarm->seconds = bcd_2_uchar(data[0]&0x7F);
             alarm->am1 = (data[0]&ALRM_MASK);
@@ -374,11 +373,11 @@ uint16_t ds3231_get_alarm(ds3231_alrm_t* alarm, bool one_r_two)
     else
     {
         data[0] = ALRM2_MINUTES;
-        rtn_val = ds3231_write(w_adrs, (const char*) data, 1);
+        rtn_val = ds3231_write(w_adrs, data, 1);
 
         if(!rtn_val)
         {
-            rtn_val = ds3231_read(r_adrs,(char *) data, 4);
+            rtn_val = ds3231_read(r_adrs, data, 4);
 
             alarm->minutes = bcd_2_uchar(data[0]&0x7F);
             alarm->am2 = (data[0]&ALRM_MASK);
@@ -418,11 +417,11 @@ uint16_t ds3231_get_cntl_stat_reg(ds3231_cntl_stat_t* data)
     uint8_t local_data[2];
 
     local_data[0] = CONTROL;
-    rtn_val = ds3231_write(w_adrs, (const char*) local_data, 1);
+    rtn_val = ds3231_write(w_adrs, local_data, 1);
 
     if(!rtn_val)
     {
-        rtn_val = ds3231_read(r_adrs,(char *) local_data, 2);
+        rtn_val = ds3231_read(r_adrs, local_data, 2);
 
         data->control = local_data[0];
         data->status = local_data[1];
@@ -438,11 +437,11 @@ uint16_t ds3231_get_temperature(void)
     uint8_t data[2];
 
     data[0] = MSB_TEMP;
-    rtn_val = ds3231_write(w_adrs, (const char*) data, 1);
+    rtn_val = ds3231_write(w_adrs, data, 1);
 
     if(!rtn_val)
     {
-        ds3231_read(r_adrs,(char *) data, 2);
+        ds3231_read(r_adrs, data, 2);
 
         rtn_val = data[0] << 8;
         rtn_val |= data[1];
@@ -461,8 +460,8 @@ time_t ds3231_get_epoch(void)
     ds3231_time_t rtc_time = {0,0,0,0,0};
     ds3231_calendar_t rtc_calendar = {0,0,0,0};
 
-    get_calendar(&rtc_calendar);
-    get_time(&rtc_time);
+    ds3231_get_calendar(&rtc_calendar);
+    ds3231_get_time(&rtc_time);
 
     sys_time.tm_wday = rtc_calendar.day - 1;
     sys_time.tm_mday = rtc_calendar.date;

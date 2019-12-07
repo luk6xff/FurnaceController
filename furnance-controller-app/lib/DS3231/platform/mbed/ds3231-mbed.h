@@ -13,19 +13,10 @@
 #include "mbed.h"
 #include "../../ds3231.h"
 
-
-/** DS3231 Dallas 1-Wire Temperature Probe
- *
- * Example:
- * @code
- *   #include "mbed.h"
- *
- *   @endcode
- */
-
-void ds3231_mbed_init(PinName sda, PinName scl);
+void ds3231_mbed_init(I2C* i2c, uint8_t i2c_addr);
 
 void ds3231_mbed_deinit();
 
 #endif // __DS3231_MBED_H__
+
 

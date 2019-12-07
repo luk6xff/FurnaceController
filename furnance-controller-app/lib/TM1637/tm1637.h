@@ -23,12 +23,6 @@ extern "C" {
 /**
  * @brief An interface for driving TM1637 LED controller
 */
-
-
-// Segment bit positions for 7 Segment display using the DISPLAY and ROBOTDYN mapping for TM1637
-// Modify this table for different 'bit-to-segment' mappings. The ASCII character defines and the FONT_7S const table below
-// will be adapted automatically according to the bit-to-segment mapping. Obviously this will only work when the segment
-// mapping is identical for every digit position. This will be the case unless the hardware designer really hates software developers.
 //
 //            A
 //          -----
@@ -42,6 +36,7 @@ extern "C" {
 //          -----   * DP
 //            D
 //
+
 #define S7_A    0x0001
 #define S7_B    0x0002
 #define S7_C    0x0004
@@ -336,12 +331,20 @@ typedef char tm1637_key_data;
 /** TM1637 dev object **/
 typedef struct
 {
-  uint8_t column;
-  uint8_t columns_num;
-  uint8_t brightness;
-  uint8_t display_on_off;
-  tm1637_display_data display_buffer;
-  tm1637_udc_data ud_chars;
+    uint8_t column;
+    uint8_t columns_num;
+    uint8_t brightness;
+    uint8_t display_on_off;
+    tm1637_display_data display_buffer;
+    tm1637_udc_data ud_chars;
+    void* platform_dev;
+    // Callbacks HW dependent functions - ddeclared as extern to force user to
+    // implement them
+    //void (*tm1637_delay_us)(tm1637* const dev, uint32_t us);
+    //void (*tm1637_set_dio_mode)(tm1637* const dev, tm1637_dio_mode mode);
+    //void (*tm1637_set_dio)(tm1637* const dev, tm1637_pin_state state);
+    //tm1637_pin_state (*tm1637_get_dio)(tm1637* const dev);
+    //void (*tm1637_set_clk)(tm1637* const dev, tm1637_pin_state state);
 } tm1637;
 
 
@@ -356,7 +359,7 @@ void tm1637_init(tm1637* const dev);
 /**
  * @brief Clear the screen and locate to 0
  */
-void tm1637_clear();
+void tm1637_clear(tm1637* const dev);
 
 /**
  * @brief  Write databyte to TM1637
@@ -373,7 +376,7 @@ void tm1637_clear();
  * @param  int address display memory location to write bytes (default = 0)
  * @return none
  */
-void tm1637_write_data(tm1637_display_data data, int length, int address);
+void tm1637_write_data(tm1637* const dev, tm1637_display_data data, int length, int address);
 
 /**
  * @brief  Read keydata block from TM1637
@@ -381,7 +384,7 @@ void tm1637_write_data(tm1637_display_data data, int length, int address);
  * @return bool keypress True when at least one key was pressed
  *
  */
-bool tm1637_get_keys(tm1637_key_data *keydata);
+bool tm1637_get_keys(tm1637* const dev, tm1637_key_data *keydata);
 
 /**
  * @brief Set Brightness
@@ -444,11 +447,11 @@ int tm1637_columns(const tm1637* const dev);
 //-----------------------------------------------------------------------------
 // @brief HW DEPENDENT FUNCTIONS - must be defined for each platform
 //-----------------------------------------------------------------------------
-extern void tm1637_delay_us(uint32_t us);
-extern void tm1637_set_dio_mode(tm1637_dio_mode mode);
-extern void tm1637_set_dio(tm1637_pin_state state);
-extern tm1637_pin_state tm1637_get_dio();
-extern void tm1637_set_clk(tm1637_pin_state state);
+extern void tm1637_delay_us(tm1637* const dev, uint32_t us);
+extern void tm1637_set_dio_mode(tm1637* const dev, tm1637_dio_mode mode);
+extern void tm1637_set_dio(tm1637* const dev, tm1637_pin_state state);
+extern tm1637_pin_state tm1637_get_dio(tm1637* const dev);
+extern void tm1637_set_clk(tm1637* const dev, tm1637_pin_state state);
 
 
 #ifdef __cplusplus
@@ -457,3 +460,4 @@ extern void tm1637_set_clk(tm1637_pin_state state);
 
 
 #endif
+

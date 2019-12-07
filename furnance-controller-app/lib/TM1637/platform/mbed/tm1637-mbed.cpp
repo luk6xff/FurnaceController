@@ -9,64 +9,56 @@
 #include "tm1637-mbed.h"
 
 
-
-/**
- * TM1637 pins
- */
-DigitalInOut* _dio;
-DigitalOut* _clk;
-
 //------------------------------------------------------------------------------
-void tm1637_mbed_init(tm1637* const dev, PinName dio, PinName clk)
+void tm1637_mbed_init(tm1637* const dev, tm1637_mbed* const mbed_dev)
 {
-    _dio = new DigitalInOut(dio);
-    _clk = new DigitalOut(clk);
+    dev->platform_dev = mbed_dev;
     tm1637_init(dev);
 }
 
 //------------------------------------------------------------------------------
-void tm1637_mbed_deinit(void)
+void tm1637_mbed_deinit(tm1637* const dev)
 {
-    // IO
-    delete(_dio);
-    delete(_clk);
 }
 
 //-----------------------------------------------------------------------------
-void tm1637_delay_us(uint32_t us)
+void tm1637_delay_us(tm1637* const dev, uint32_t us)
 {
     wait_us(us);
 }
 
 //-----------------------------------------------------------------------------
-void tm1637_set_dio_mode(tm1637_dio_mode mode)
+void tm1637_set_dio_mode(tm1637* const dev, tm1637_dio_mode mode)
 {
+    tm1637_mbed* pd = (tm1637_mbed*)dev->platform_dev;
     if (mode == TM1637_DIO_INPUT)
     {
-        _dio->input();
+        pd->dio.input();
     }
     else // mode == DIO_OUTPUT
     {
-        _dio->output();
-        //_dio.mode(PullUp);
+        pd->dio.output();
+        //pd->dio->mode(PullUp);
     }
 }
 
 //-----------------------------------------------------------------------------
-void tm1637_set_dio(tm1637_pin_state state)
+void tm1637_set_dio(tm1637* const dev, tm1637_pin_state state)
 {
+    tm1637_mbed* pd = (tm1637_mbed*)dev->platform_dev;
     if (state == TM1637_PIN_HIGH)
     {
-        *_dio = 1;
+        pd->dio = 1;
         return;
     }
-    *_dio = 0;  // TM1637_PIN_LOW
+    pd->dio = 0;  // TM1637_PIN_LOW
 }
 
 //-----------------------------------------------------------------------------
-tm1637_pin_state tm1637_get_dio()
+tm1637_pin_state tm1637_get_dio(tm1637* const dev)
 {
-    if (*_dio)
+    tm1637_mbed* pd = (tm1637_mbed*)dev->platform_dev;
+    if (pd->dio)
     {
         return TM1637_PIN_HIGH;
     }
@@ -74,14 +66,15 @@ tm1637_pin_state tm1637_get_dio()
 }
 
 //-----------------------------------------------------------------------------
-void tm1637_set_clk(tm1637_pin_state state)
+void tm1637_set_clk(tm1637* const dev, tm1637_pin_state state)
 {
+    tm1637_mbed* pd = (tm1637_mbed*)dev->platform_dev;
     if (state == TM1637_PIN_HIGH)
     {
-        *_clk = 1;
+        pd->clk = 1;
         return;
     }
-    *_clk = 0; // TM1637_PIN_LOW
+    pd->clk = 0; // TM1637_PIN_LOW
 }
 
 //-----------------------------------------------------------------------------

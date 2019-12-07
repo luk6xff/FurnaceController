@@ -1,27 +1,3 @@
-/* mbed TM1637 Library, for TM1637 LED controller
- * Copyright (c) 2016, v01: WH, Initial version
- *               2017, v02: WH, Added RobotDyn 6 Digit module,
- *                          Added Eyewink 6 Digit + 6 Keys module,
- *                          Constructor adapted to 2 pins: dio, clk
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, inclumosig without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUmosiG BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 #include "tm1637.h"
 
 //------------------------------------------------------------------------------
@@ -38,12 +14,8 @@ const char MASK_ICON_GRID[] = {
                               };
 
 // ASCII Font definition table for transmission to TM1637
-//
-//#define FONT_7S_START     0x20
-//#define FONT_7S_END       0x7F
-//#define FONT_7S_NR_CHARS (FONT_7_END - FONT_7S_START + 1)
 
-//display all ASCII characters
+// Display all ASCII characters
 const short FONT_7S[]  = {
                              C7_SPC, //32 0x20, Space
                              C7_EXC,
@@ -159,27 +131,27 @@ static void _init(tm1637* const dev);
  * @param  none
  * @return none
  */
-static void _start();
+static void _start(tm1637* const dev);
 
 /**
  * @brief Generate Stop condition for TM1637
  * @param  none
  * @return none
  */
-static void _stop();
+static void _stop(tm1637* const dev);
 
 /**
  * @brief Send byte to TM1637
  * @param  int data
  * @return none
  */
-static void _write(uint8_t data);
+static void _write(tm1637* const dev, uint8_t data);
 
 /**
  * @brief  Read byte from TM1637
  * @return read byte
  */
-static uint8_t _read();
+static uint8_t _read(tm1637* const dev);
 
 /**
  * @brief Write command and parameter to TM1637
@@ -187,7 +159,7 @@ static uint8_t _read();
  * @param  int data Parameters for command
  * @return none
  */
-static void _write_cmd(uint8_t cmd, uint8_t data);
+static void _write_cmd(tm1637* const dev, uint8_t cmd, uint8_t data);
 
 /**
  * @brief Write a single character
@@ -210,16 +182,16 @@ void tm1637_init(tm1637* const dev)
 }
 
 //------------------------------------------------------------------------------
-void tm1637_clear()
+void tm1637_clear(tm1637* const dev)
 {
-    _start();
+    _start(dev);
 
-    _write(TM1637_ADDR_SET_CMD | 0x00); // Address set cmd, 0
+    _write(dev, TM1637_ADDR_SET_CMD | 0x00); // Address set cmd, 0
     for (int cnt=0; cnt<TM1637_DISPLAY_MEM; cnt++)
     {
-        _write(0x00); // data
+        _write(dev, 0x00); // data
     }
-    _stop();
+    _stop(dev);
 }
 
 
@@ -236,10 +208,9 @@ void tm1637_clear()
 
 
 //------------------------------------------------------------------------------
-void tm1637_write_data(tm1637_display_data data, int length, int address)
+void tm1637_write_data(tm1637* const dev, tm1637_display_data data, int length, int address)
 {
-
-    _start();
+    _start(dev);
 
     // Sanity check
     address &= TM1637_ADDR_MSK;
@@ -253,33 +224,33 @@ void tm1637_write_data(tm1637_display_data data, int length, int address)
         length = (TM1637_DISPLAY_MEM - address);
     }
 
-    _write(TM1637_ADDR_SET_CMD | address); // Set Address
+    _write(dev, TM1637_ADDR_SET_CMD | address); // Set Address
 
     for (int idx=0; idx<length; idx++)
     {
-        _write(data[address + idx]); // data
+        _write(dev, data[address + idx]); // data
     }
 
-    _stop();
+    _stop(dev);
 }
 
 
 //------------------------------------------------------------------------------
-bool tm1637_get_keys(tm1637_key_data *keydata)
+bool tm1637_get_keys(tm1637* const dev, tm1637_key_data *keydata)
 {
-    _start();
+    _start(dev);
 
     // Enable Key Read mode
-    _write(TM1637_DATA_SET_CMD | TM1637_KEY_RD | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, read data
+    _write(dev, TM1637_DATA_SET_CMD | TM1637_KEY_RD | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, read data
 
     // Read keys
     // Bitpattern S0 S1 S2 K1 K2 1 1 1
-    *keydata = _read();
+    *keydata = _read(dev);
 
-    _stop();
+    _stop(dev);
 
     // Restore Data Write mode
-    _write_cmd(TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
+    _write_cmd(dev, TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
 
     return (*keydata != TM1637_SW_NONE);
 }
@@ -290,7 +261,7 @@ void tm1637_set_brightness(tm1637* const dev, uint8_t brightness)
 {
     dev->brightness = brightness & TM1637_BRT_MSK; // mask invalid bits
 
-    _write_cmd(TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness );  // Display control cmd, display on/off, brightness
+    _write_cmd(dev, TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness );  // Display control cmd, display on/off, brightness
 }
 
 
@@ -306,7 +277,7 @@ void tm1637_set_display(tm1637* const dev, bool on)
         dev->display_on_off = TM1637_DSP_OFF;
     }
 
-    _write_cmd(TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness );  // Display control cmd, display on/off, brightness
+    _write_cmd(dev, TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness );  // Display control cmd, display on/off, brightness
 }
 
 //------------------------------------------------------------------------------
@@ -335,7 +306,7 @@ void tm1637_set_icon(tm1637* const dev, tm1637_icon icon)
 
     //Save char...and set bits for icon to write
     dev->display_buffer[addr] = dev->display_buffer[addr] | LO(icn);
-    tm1637_write_data(dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+    tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
 }
 
 
@@ -350,7 +321,7 @@ void tm1637_clear_icon(tm1637* const dev, tm1637_icon icon)
 
     //Save char...and clr bits for icon to write
     dev->display_buffer[addr] = dev->display_buffer[addr] & ~LO(icn);
-    tm1637_write_data(dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+    tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
 }
 
 
@@ -383,91 +354,91 @@ int columns(const tm1637* const dev)
 void _init(tm1637* const dev)
 {
     // Init Serial bus
-    tm1637_set_dio_mode(TM1637_DIO_OUTPUT);
-    tm1637_delay_us(1);
+    tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
+    tm1637_delay_us(dev, 1);
 
-    tm1637_set_dio(TM1637_PIN_HIGH);
-    tm1637_set_clk(TM1637_PIN_HIGH);
+    tm1637_set_dio(dev, TM1637_PIN_HIGH);
+    tm1637_set_clk(dev, TM1637_PIN_HIGH);
 
     //init controller
     dev->display_on_off = TM1637_DSP_ON;
     dev->brightness = TM1637_BRT_DEF;
-    _write_cmd(TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness);                                 // Display control cmd, display on/off, brightness
+    _write_cmd(dev, TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness);                                 // Display control cmd, display on/off, brightness
 
-    _write_cmd(TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
+    _write_cmd(dev, TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
 }
 
 //------------------------------------------------------------------------------
-void _start()
+void _start(tm1637* const dev)
 {
-    tm1637_set_dio(TM1637_PIN_LOW);
-    tm1637_delay_us(1);
-    tm1637_set_clk(TM1637_PIN_LOW );
-    tm1637_delay_us(1);
+    tm1637_set_dio(dev, TM1637_PIN_LOW);
+    tm1637_delay_us(dev, 1);
+    tm1637_set_clk(dev, TM1637_PIN_LOW );
+    tm1637_delay_us(dev, 1);
 }
 
 
 //------------------------------------------------------------------------------
-void _stop()
+void _stop(tm1637* const dev)
 {
-    tm1637_set_dio(TM1637_PIN_LOW);
-    tm1637_delay_us(1);
-    tm1637_set_clk(TM1637_PIN_HIGH);
-    tm1637_delay_us(1);
-    tm1637_set_dio(TM1637_PIN_HIGH);
-    tm1637_delay_us(1);
+    tm1637_set_dio(dev, TM1637_PIN_LOW);
+    tm1637_delay_us(dev, 1);
+    tm1637_set_clk(dev, TM1637_PIN_HIGH);
+    tm1637_delay_us(dev, 1);
+    tm1637_set_dio(dev, TM1637_PIN_HIGH);
+    tm1637_delay_us(dev,1 );
 }
 
 
 //------------------------------------------------------------------------------
-void _write(uint8_t data)
+void _write(tm1637* const dev, uint8_t data)
 {
     for (int bit=0; bit<8; bit++)
     {
         //The TM1637 expects LSB first
         if (((data >> bit) & 0x01) == 0x01)
         {
-            tm1637_set_dio(TM1637_PIN_HIGH);
+            tm1637_set_dio(dev, TM1637_PIN_HIGH);
         }
         else
         {
-            tm1637_set_dio(TM1637_PIN_LOW);
+            tm1637_set_dio(dev, TM1637_PIN_LOW);
         }
-        tm1637_delay_us(1);
-        tm1637_set_clk(TM1637_PIN_HIGH);
-        tm1637_delay_us(1);
-        tm1637_set_clk(TM1637_PIN_LOW );
-        tm1637_delay_us(1);
+        tm1637_delay_us(dev, 1);
+        tm1637_set_clk(dev, TM1637_PIN_HIGH);
+        tm1637_delay_us(dev, 1);
+        tm1637_set_clk(dev, TM1637_PIN_LOW );
+        tm1637_delay_us(dev, 1);
     }
 
-    tm1637_set_dio(TM1637_PIN_HIGH);
+    tm1637_set_dio(dev, TM1637_PIN_HIGH);
 
     // Prepare DIO to read data
-    tm1637_set_dio_mode(TM1637_DIO_INPUT);
-    tm1637_delay_us(3);
+    tm1637_set_dio_mode(dev, TM1637_DIO_INPUT);
+    tm1637_delay_us(dev, 3);
 
     // dummy Ack
-    tm1637_set_clk(TM1637_PIN_HIGH);
-    tm1637_delay_us(1);
+    tm1637_set_clk(dev, TM1637_PIN_HIGH);
+    tm1637_delay_us(dev, 1);
     //  _ack = _dio;
-    tm1637_set_clk(TM1637_PIN_LOW );
-    tm1637_delay_us(1);
+    tm1637_set_clk(dev, TM1637_PIN_LOW );
+    tm1637_delay_us(dev, 1);
 
     // Return DIO to output mode
-    tm1637_set_dio_mode(TM1637_DIO_OUTPUT);
-    tm1637_delay_us(3);
+    tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
+    tm1637_delay_us(dev, 3);
 
-    tm1637_set_dio(TM1637_PIN_HIGH); //idle
+    tm1637_set_dio(dev, TM1637_PIN_HIGH); //idle
 }
 
 //------------------------------------------------------------------------------
-uint8_t _read()
+uint8_t _read(tm1637* const dev)
 {
     char keycode = 0;
 
     // Prepare DIO to read data
-    tm1637_set_dio_mode(TM1637_DIO_INPUT);
-    tm1637_delay_us(3);
+    tm1637_set_dio_mode(dev, TM1637_DIO_INPUT);
+    tm1637_delay_us(dev, 3);
 
     for (int bit=0; bit<8; bit++)
     {
@@ -478,46 +449,46 @@ uint8_t _read()
         // The code below flips bits for easier matching with datasheet
         keycode = keycode << 1;
 
-        tm1637_set_clk(TM1637_PIN_HIGH);
-        tm1637_delay_us(1);
+        tm1637_set_clk(dev, TM1637_PIN_HIGH);
+        tm1637_delay_us(dev, 1);
 
         // Read next bit
-        if (tm1637_get_dio() == TM1637_PIN_HIGH)
+        if (tm1637_get_dio(dev) == TM1637_PIN_HIGH)
         {
             keycode |= 0x01;
         }
 
-        tm1637_set_clk(TM1637_PIN_LOW );
-        tm1637_delay_us(5); // Delay to allow for slow risetime
+        tm1637_set_clk(dev, TM1637_PIN_LOW );
+        tm1637_delay_us(dev, 5); // Delay to allow for slow risetime
     }
 
     // Return DIO to output mode
-    tm1637_set_dio_mode(TM1637_DIO_OUTPUT);
-    tm1637_delay_us(3);
+    tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
+    tm1637_delay_us(dev, 3);
 
     // dummy Ack
-    tm1637_set_dio(TM1637_PIN_LOW); //Ack
-    tm1637_delay_us(1);
+    tm1637_set_dio(dev, TM1637_PIN_LOW); //Ack
+    tm1637_delay_us(dev, 1);
 
-    tm1637_set_clk(TM1637_PIN_HIGH);
-    tm1637_delay_us(1);
-    tm1637_set_clk(TM1637_PIN_LOW );
-    tm1637_delay_us(1);
+    tm1637_set_clk(dev, TM1637_PIN_HIGH);
+    tm1637_delay_us(dev, 1);
+    tm1637_set_clk(dev, TM1637_PIN_LOW);
+    tm1637_delay_us(dev, 1);
 
-    tm1637_set_dio(TM1637_PIN_HIGH); //idle
+    tm1637_set_dio(dev, TM1637_PIN_HIGH); //idle
 
     return keycode;
 }
 
 
 //------------------------------------------------------------------------------
-void _write_cmd(uint8_t cmd, uint8_t data)
+void _write_cmd(tm1637* const dev, uint8_t cmd, uint8_t data)
 {
-    _start();
+    _start(dev);
 
-    _write((cmd & TM1637_CMD_MSK) | (data & ~TM1637_CMD_MSK));
+    _write(dev, (cmd & TM1637_CMD_MSK) | (data & ~TM1637_CMD_MSK));
 
-    _stop();
+    _stop(dev);
 }
 
 //------------------------------------------------------------------------------
@@ -554,7 +525,7 @@ int _putc(tm1637* const dev, int value)
             addr = (dev->column - 1);
             //Save icons...and set bits for decimal point to write
             dev->display_buffer[addr] = dev->display_buffer[addr] | pattern;
-            tm1637_write_data(dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+            tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
             //No Cursor Update
         }
     }
@@ -582,7 +553,7 @@ int _putc(tm1637* const dev, int value)
         //Save icons...and set bits for character to write
         dev->display_buffer[addr] = (dev->display_buffer[addr] & MASK_ICON_GRID[dev->column]) | pattern;
 
-        tm1637_write_data(dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
+        tm1637_write_data(dev, dev->display_buffer, TM1637_BYTES_PER_GRID, addr);
 
         //Update Cursor
         dev->column++;
@@ -596,3 +567,4 @@ int _putc(tm1637* const dev, int value)
 }
 
 //------------------------------------------------------------------------------
+

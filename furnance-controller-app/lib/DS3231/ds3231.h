@@ -20,7 +20,6 @@ extern "C" {
 #include <time.h>
 
 
-#define DS3231_I2C_ADRS 0x68
 #define I2C_WRITE 0
 #define I2C_READ  1
 
@@ -208,7 +207,7 @@ typedef enum
 /**
  * @brief Init function
  *
- * @param[in] I2C module addr;
+ * @param[in] I2C bus module addr;
  *
  */
 void ds3231_init(uint8_t i2c_addr);
@@ -329,7 +328,7 @@ time_t ds3231_get_epoch(void);
 //-----------------------------------------------------------------------------
 // @brief HW DEPENDENT FUNCTIONS - must be defined for each platform
 //-----------------------------------------------------------------------------
-extern bool ds3231_write(uint16_t addr, uint8_t* buf, size_t buf_size);
+extern bool ds3231_write(uint16_t addr, const uint8_t* buf, size_t buf_size);
 extern bool ds3231_read(uint16_t addr, uint8_t* buf, size_t buf_size);
 
 
@@ -339,3 +338,4 @@ extern bool ds3231_read(uint16_t addr, uint8_t* buf, size_t buf_size);
 
 
 #endif /* __DS3231_H__*/
+
