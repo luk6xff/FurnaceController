@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 // @brief GLOBAL VARIABLES
 //------------------------------------------------------------------------------
-/** 
+/**
  * @brief ROM is a copy of the internal DS1820's ROM
  *        It is created during the ds1820_search_rom() or ds1820_search_alarm() commands
  *
@@ -17,7 +17,7 @@ static char ds1820_rom[8];
 #define FAMILY_CODE_DS18S20 0x10
 #define FAMILY_CODE_DS18B20 0x28
 
-/** 
+/**
  * @brief RAM is a copy of the internal DS1820's RAM
  *        It's updated during the ds1820_read_ram() command
  *        which is automaticaly called from any function
@@ -59,23 +59,22 @@ void ds1820_init(bool parasite_powered)
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void onewire_byte_out(char data)
-{ // output data character (least sig bit first).
-    int n;
-    for (n=0; n<8; n++)
+{
+    // Output data character (least sig bit first).
+    for (int n=0; n<8; n++)
     {
         ds1820_onewire_bit_out(data & 0x01);
         data = data >> 1; // now the next bit is in the least sig bit position.
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 char onewire_byte_in()
-{   // read byte, least sig byte first
+{   // Read byte, least sig byte first
     char answer = 0x00;
-    int i;
-    for (i=0; i<8; i++)
+    for (int i=0; i<8; i++)
     {
         answer = answer >> 1; // shift over to make room for the next bit
         if (ds1820_onewire_bit_in())
@@ -84,12 +83,12 @@ char onewire_byte_in()
     return answer;
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 bool ds1820_search_rom()
 {
     return ds1820_search_rom_routine(0xF0);    // Search ROM command
 }
- 
+
 //------------------------------------------------------------------------------
 bool ds1820_search_alarm()
 {
@@ -102,7 +101,7 @@ bool ds1820_search_rom_routine(char command)
     int descrepancy_marker, ROM_bit_index;
     bool return_value, Bit_A, Bit_B;
     char byte_counter, bit_mask;
- 
+
     return_value=false;
     if (!_ds1820_done_flag)
     {
@@ -110,7 +109,7 @@ bool ds1820_search_rom_routine(char command)
         {
             _ds1820_last_descrepancy = 0; // no devices present
         }
-        else 
+        else
         {
             ROM_bit_index=1;
             descrepancy_marker=0;
@@ -194,7 +193,7 @@ bool ds1820_search_rom_routine(char command)
     return return_value;
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void ds1820_search_rom_setup()
 {
     _ds1820_done_flag = false;
@@ -206,7 +205,7 @@ void ds1820_search_rom_setup()
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void ds1820_read_rom()
 {
     // NOTE: This command can only be used when there is one DS1820 on the bus. If this command
@@ -221,7 +220,7 @@ void ds1820_read_rom()
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void match_rom()
 {
     // Used to select a specific device
@@ -234,14 +233,14 @@ void match_rom()
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void skip_rom()
 {
     ds1820_onewire_reset();
     onewire_byte_out(0xCC);   // Skip ROM command
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 bool ds1820_rom_checksum_error()
 {
     char crc=0x00;
@@ -249,10 +248,10 @@ bool ds1820_rom_checksum_error()
     for(i=0;i<7;i++) // Only going to shift the lower 7 bytes
         crc = crc_byte(crc, ds1820_rom[i]);
     // After 7 bytes crc should equal the 8th byte (ROM crc)
-    return (crc!=ds1820_rom[7]); // will return true if there is a crc checksum error         
+    return (crc!=ds1820_rom[7]); // will return true if there is a crc checksum error
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 bool ds1820_ram_checksum_error()
 {
     char crc=0x00;
@@ -263,10 +262,10 @@ bool ds1820_ram_checksum_error()
         crc = crc_byte(crc, ds1820_ram[i]);
     }
     // After 8 bytes crc should equal the 9th byte (RAM crc)
-    return (crc != ds1820_ram[8]); // will return true if there is a crc checksum error         
+    return (crc != ds1820_ram[8]); // will return true if there is a crc checksum error
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 char crc_byte(char crc, char byte)
 {
     int j;
@@ -279,7 +278,7 @@ char crc_byte(char crc, char byte)
             // Set the MSB to 1
             crc = crc | 0x80;
             // Check bit 3
-            if (crc & 0x04) 
+            if (crc & 0x04)
             {
                 crc = crc & 0xFB; // Bit 3 is set, so clear it
             } else
@@ -308,7 +307,7 @@ char crc_byte(char crc, char byte)
     return crc;
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void ds1820_convert_temperature(DS1820_Devices_t device)
 {
     // Convert temperature into scratchpad RAM for all devices at once
@@ -350,7 +349,7 @@ void ds1820_convert_temperature(DS1820_Devices_t device)
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void ds1820_read_ram()
 {
     // This will copy the DS1820's 9 bytes of RAM data
@@ -365,7 +364,7 @@ void ds1820_read_ram()
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 bool ds1820_set_configuration_bits(unsigned int resolution)
 {
     bool answer = false;
@@ -381,7 +380,7 @@ bool ds1820_set_configuration_bits(unsigned int resolution)
     return answer;
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 int ds1820_read_scratchpad()
 {
     int answer;
@@ -389,7 +388,7 @@ int ds1820_read_scratchpad()
     answer = (ds1820_ram[2]<<8) + ds1820_ram[3];
     return answer;
 }
- 
+
 //------------------------------------------------------------------------------
 void ds1820_write_scratchpad(int data)
 {
@@ -405,7 +404,7 @@ void ds1820_write_scratchpad(int data)
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 void ds1820_store_scratchpad(DS1820_Devices_t device)
 {
     if (device == ALL)
@@ -428,7 +427,7 @@ void ds1820_store_scratchpad(DS1820_Devices_t device)
     }
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 int ds1820_recall_scratchpad(DS1820_Devices_t device)
 {
     // This copies the E2 values into the DS1820's memory.
@@ -452,9 +451,9 @@ int ds1820_recall_scratchpad(DS1820_Devices_t device)
         answer = ds1820_read_scratchpad();
     }
     return answer;
-}    
+}
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 float ds1820_read_temperature(DS1820_Scale_t scale)
 {
     float answer, remaining_count, count_per_degree;
@@ -462,7 +461,7 @@ float ds1820_read_temperature(DS1820_Scale_t scale)
     ds1820_read_ram();
     reading = (ds1820_ram[1] << 8) + ds1820_ram[0];
     if (reading & 0x8000) // negative degrees C
-    { 
+    {
         reading = 0-((reading ^ 0xffff) + 1); // 2's comp then convert to signed int
     }
     answer = reading +0.0; // convert to floating point
@@ -487,7 +486,7 @@ float ds1820_read_temperature(DS1820_Scale_t scale)
     return answer;
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 bool ds1820_read_power_supply(DS1820_Devices_t device)
 {
     // This will return true if the device (or all devices) are Vcc powered
@@ -504,4 +503,4 @@ bool ds1820_read_power_supply(DS1820_Devices_t device)
     return ds1820_onewire_bit_in();
 }
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------

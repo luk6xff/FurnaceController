@@ -1,8 +1,24 @@
 
+/**
+ *  @brief:   TM1637 LED controller sensor library.
+ *  @author:  luk6xff
+ *  @email:   lukasz.uszko@gmail.com
+ *  @date:    2019-12-06
+ *  @license: MIT
+ */
 
-#ifndef TM1637_H
-#define TM1637_H
 
+
+#ifndef __TM1637_H__
+#define __TM1637_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
 /**
  * @brief An interface for driving TM1637 LED controller
@@ -51,33 +67,27 @@
 //Icons Grid 1
 #define S7_DP1  0x0080
 #define S7_ICON_GR1 (0x0000)
-//#define S7_ICON_GR1 (S7_DP1)
 
 //Icons Grid 2
 #define S7_DP2  0x0080
 #define S7_COL2 0x0080
 #define S7_ICON_GR2 (0x0000)
-//#define S7_ICON_GR2 (S7_DP2)
 
 //Icons Grid 3
 #define S7_DP3  0x0080
 #define S7_ICON_GR3 (0x0000)
-//#define S7_ICON_GR3 (S7_DP3)
 
 //Icons Grid 4
 #define S7_DP4  0x0080
 #define S7_ICON_GR4 (0x0000)
-//#define S7_ICON_GR4 (S7_DP4)
 
 //Icons Grid 5
 #define S7_DP5  0x0080
 #define S7_ICON_GR5 (0x0000)
-//#define S7_ICON_GR5 (S7_DP5)
 
 //Icons Grid 6
 #define S7_DP6  0x0080
 #define S7_ICON_GR6 (0x0000)
-//#define S7_ICON_GR6 (S7_DP6)
 
 
 //Mask for blending out and restoring Icons
@@ -211,22 +221,18 @@ extern const char MASK_ICON_GRID[];
 
 
 // ASCII Font definition table
-//
 #define FONT_7S_START     0x20
 #define FONT_7S_END       0x7F
-//#define FONT_7S_NR_CHARS (FONT_7S_END - FONT_7S_START + 1)
 extern const short FONT_7S[];
 
 
 //TM1637 Display data
-#define TM1637_MAX_NR_GRIDS    6
-#define TM1637_BYTES_PER_GRID  1
+#define TM1637_MAX_DIGITS_NUM  6
+#define TM1637_BYTES_PER_GRID   1
 
-//Significant bits Keymatrix data
-//#define TM1638_KEY_MSK      0xFF
 
 //Memory size in bytes for Display and Keymatrix
-#define TM1637_DISPLAY_MEM  (TM1637_MAX_NR_GRIDS * TM1637_BYTES_PER_GRID)
+#define TM1637_DISPLAY_MEM  (TM1637_MAX_DIGITS_NUM * TM1637_BYTES_PER_GRID)
 #define TM1637_KEY_MEM         2
 
 //Reserved bits for commands
@@ -293,192 +299,161 @@ extern const short FONT_7S[];
 #define DISPLAY_NR_DIGITS 4
 #define DISPLAY_NR_UDC    8
 
-
-/** A class for driving TM1637 LED controller
- *
- * @brief Supports 4 Grids @ 4 Segments and 16 Keys.
- *        Serial bus interface device.
- */
-class TM1637 : public Stream
+/** Enums **/
+//  Grid encoded in 8 MSBs, tm1637_icon pattern encoded in 16 LSBs
+typedef enum
 {
- public:
+  DP1   = ( 1<<24) | S7_DP1,  /**<  Digit 1 */
+  DP2   = ( 2<<24) | S7_DP2,  /**<  Digit 2 */
+  DP3   = ( 3<<24) | S7_DP3,  /**<  Digit 3 */
+  DP4   = ( 4<<24) | S7_DP4,  /**<  Digit 4 */
 
-  /** Datatype for displaydata */
-  typedef char DisplayData_t[TM1637_DISPLAY_MEM];
+  COL2  = ( 2<<24) | S7_DP2,  /**<  Column 2 */
+} tm1637_icon;
 
-  /** Datatypes for keymatrix data */
-  typedef char KeyData_t;
+typedef enum
+{
+    TM1637_DIO_INPUT = 0,
+    TM1637_DIO_OUTPUT,
+} tm1637_dio_mode;
 
+typedef enum
+{
+    TM1637_PIN_LOW = 0,
+    TM1637_PIN_HIGH,
+} tm1637_pin_state;
 
- /** Constructor for class for driving TM1637 LED controller
-  *
-  * @brief Supports 4 Digits of 7 Segments + DP (or Colon for Digit2 on some models).
-  *        Also Supports up to 16 Keys. Serial bus interface device.
-  *
-  *  @param  PinName dio Serial bus DIO pin
-  *  @param  PinName sck Serial bus CLK pin
-  */
-  TM1637(PinName dio, PinName clk);
+/** Datatype for displaydata */
+typedef char tm1637_display_data[TM1637_DISPLAY_MEM];
 
-  /** Clear the screen and locate to 0
-   */
-  void cls();
+/** Datatype for user defined chars */
+typedef char tm1637_udc_data[DISPLAY_NR_UDC];
 
-
-
-   /** Write databyte to TM1637
-     *  @param  char data byte written at given address
-     *  @param  int address display memory location to write byte
-     *  @return none
-     */
-    void writeData(char data, int address);
-
-   /** Write Display datablock to TM1637
-    *  @param  DisplayData_t data Array of TM1637_DISPLAY_MEM (=4) bytes for displaydata
-    *  @param  length number bytes to write (valid range 0..(DISPLAY_NR_GRIDS * TM1637_BYTES_PER_GRID) (=4), when starting at address 0)
-    *  @param  int address display memory location to write bytes (default = 0)
-    *  @return none
-    */
-    void writeData(DisplayData_t data, int length = (DISPLAY_NR_GRIDS * TM1637_BYTES_PER_GRID), int address = 0);
-
-  /** Read keydata block from TM1637
-   *  @param  *keydata Ptr to bytes for keydata
-   *  @return bool keypress True when at least one key was pressed
-   *
-   */
-  bool getKeys(KeyData_t *keydata);
-
-  /** Set Brightness
-    *
-    * @param  char brightness (3 significant bits, valid range 0..7 (1/16 .. 14/16 dutycycle)
-    * @return none
-    */
-  void setBrightness(char brightness = TM1637_BRT_DEF);
-
-  /** Set the Display mode On/off
-    *
-    * @param bool display mode
-    */
-  void setDisplay(bool on);
+/** Datatypes for keymatrix data */
+typedef char tm1637_key_data;
 
 
+/** TM1637 dev object **/
+typedef struct
+{
+  uint8_t column;
+  uint8_t columns_num;
+  uint8_t brightness;
+  uint8_t display_on_off;
+  tm1637_display_data display_buffer;
+  tm1637_udc_data ud_chars;
+} tm1637;
 
 
-
-  /** Enums for Icons */
-  //  Grid encoded in 8 MSBs, Icon pattern encoded in 16 LSBs
-  enum Icon {
-    DP1   = ( 1<<24) | S7_DP1,  /**<  Digit 1 */
-    DP2   = ( 2<<24) | S7_DP2,  /**<  Digit 2 */
-    DP3   = ( 3<<24) | S7_DP3,  /**<  Digit 3 */
-    DP4   = ( 4<<24) | S7_DP4,  /**<  Digit 4 */
-
-    COL2  = ( 2<<24) | S7_DP2,  /**<  Column 2 */
-  };
-
-  typedef char UDCData_t[DISPLAY_NR_UDC];
+/**
+ * @brief Init function driving TM1637 LED controller.
+ *        Supports 4 Digits of 7 Segments + DP (or Colon for Digit2 on some models).
+ *        Also Supports up to 16 Keys. Serial bus interface device.
+ */
+void tm1637_init(tm1637* const dev);
 
 
+/**
+ * @brief Clear the screen and locate to 0
+ */
+void tm1637_clear();
 
-     /** Locate cursor to a screen column
-     *
-     * @param column  The horizontal position from the left, indexed from 0
-     */
-    void locate(int column);
+/**
+ * @brief  Write databyte to TM1637
+ * @param  char data byte written at given address
+ * @param  int address display memory location to write byte
+ * @return none
+ */
+//void tm1637_write_data(char data, int address);
 
+/**
+ * @brief  Write Display datablock to TM1637
+ * @param  tm1637_display_data data Array of TM1637_DISPLAY_MEM (=4) bytes for displaydata
+ * @param  length number bytes to write (valid range 0..(DISPLAY_NR_GRIDS * TM1637_BYTES_PER_GRID_NUM) (=4), when starting at address 0)
+ * @param  int address display memory location to write bytes (default = 0)
+ * @return none
+ */
+void tm1637_write_data(tm1637_display_data data, int length, int address);
 
-    /** Set Icon
-     *
-     * @param Icon icon Enums Icon has Grid position encoded in 8 MSBs, Icon pattern encoded in 16 LSBs
-     * @return none
-     */
-    void setIcon(Icon icon);
+/**
+ * @brief  Read keydata block from TM1637
+ * @param  *keydata Ptr to bytes for keydata
+ * @return bool keypress True when at least one key was pressed
+ *
+ */
+bool tm1637_get_keys(tm1637_key_data *keydata);
 
-    /** Clr Icon
-     *
-     * @param Icon icon Enums Icon has Grid position encoded in 8 MSBs, Icon pattern encoded in 16 LSBs
-     * @return none
-     */
-    void clrIcon(Icon icon);
+/**
+ * @brief Set Brightness
+ *
+ * @param  uint8_t brightness (3 significant bits, valid range 0..7 (1/16 .. 14/16 dutycycle)
+ * @return none
+ */
+void tm1637_set_brightness(tm1637* const dev, uint8_t brightness);
 
-   /** Set User Defined Characters (UDC)
-     *
-     * @param unsigned char udc_idx   The Index of the UDC (0..7)
-     * @param int udc_data            The bitpattern for the UDC (16 bits)
-     */
-    void setUDC(unsigned char udc_idx, int udc_data);
+/**
+ * @brief Set the Display mode On/off
+ *
+ * @param bool display mode
+ */
+void tm1637_set_display(tm1637* const dev, bool on);
 
-
-   /** Number of screen columns
-    *
-    * @param none
-    * @return columns
-    */
-    int columns();
-
-
-protected:
-    // Stream implementation functions
-    virtual int _putc(int value);
-    virtual int _getc();
-
- private:
-
-    DigitalInOut _dio;
-    DigitalOut   _clk;
-
-    int _column;
-    int _columns;
-
-    DisplayData_t _displaybuffer;
-    UDCData_t _UDC_7S;
-
-    char _display;
-    char _bright;
-
-  /** Init the Serial interface and the controller
-    * @param  none
-    * @return none
-    */
-    void _init();
+/**
+ * @brief Locate cursor to a screen column
+ *
+ * @param column  The horizontal position from the left, indexed from 0
+ */
+void tm1637_locate(tm1637* const dev, int column);
 
 
-  /** Generate Start condition for TM1637
-    *  @param  none
-    *  @return none
-    */
-    void _start();
+/**
+ * @brief Set tm1637_icon
+ *
+ * @param tm1637_icon icon Enums tm1637_icon has Grid position encoded in 8 MSBs, tm1637_icon pattern encoded in 16 LSBs
+ * @return none
+ */
+void tm1637_set_icon(tm1637* const dev, tm1637_icon icon);
 
-  /** Generate Stop condition for TM1637
-    *  @param  none
-    *  @return none
-    */
-    void _stop();
+/**
+ * @brief Clr tm1637_icon
+ *
+ * @param tm1637_icon icon Enums tm1637_icon has Grid position encoded in 8 MSBs, tm1637_icon pattern encoded in 16 LSBs
+ * @return none
+ */
+void tm1637_clear_icon(tm1637* const dev, tm1637_icon icon);
 
-  /** Send byte to TM1637
-    *  @param  int data
-    *  @return none
-    */
-    void _write(int data);
-
-  /** Read byte from TM1637
-    *  @return read byte
-    */
-    char _read();
-
-  /** Write command and parameter to TM1637
-    *  @param  int cmd Command byte
-    *  &Param  int data Parameters for command
-    *  @return none
-    */
-    void _writeCmd(int cmd, int data);
+/**
+ * @brief Set User Defined Characters (UDC)
+ *
+ * @param uint8_t udc_idx   The Index of the UDC (0..7)
+ * @param int udc_data            The bitpattern for the UDC (16 bits)
+ */
+void tm1637_set_udc(tm1637* const dev, uint8_t udc_idx, int udc_data);
 
 
-};
+/**
+ * @brief @brief Number of screen columns
+ *
+ * @return columns
+*/
+int tm1637_columns(const tm1637* const dev);
 
 
 
 
+//-----------------------------------------------------------------------------
+// @brief HW DEPENDENT FUNCTIONS - must be defined for each platform
+//-----------------------------------------------------------------------------
+extern void tm1637_delay_us(uint32_t us);
+extern void tm1637_set_dio_mode(tm1637_dio_mode mode);
+extern void tm1637_set_dio(tm1637_pin_state state);
+extern tm1637_pin_state tm1637_get_dio();
+extern void tm1637_set_clk(tm1637_pin_state state);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif
