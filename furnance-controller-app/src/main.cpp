@@ -13,7 +13,7 @@ int main()
 {
 
     // AT24CXX
-    #define AT24CXX_I2C_ADDR 0x68
+    #define AT24CXX_I2C_ADDR 0x07 // A0=1, A1=1, A2=1
     #define AT24CXX_SDA PB_7
     #define AT24CXX_SCL PB_6
     #define AT24CXX_WP PB_8
@@ -29,6 +29,40 @@ int main()
         .addr = AT24CXX_I2C_ADDR,
     };
     at24cxx_mbed_init(&at24c32, &at24c32_mbed);
+    // EEPROM tests
+    #define TEST_DATA_SIZE 64
+    // Write data
+    uint8_t test_data_w[TEST_DATA_SIZE];
+    for (int i = 0; i < TEST_DATA_SIZE; i++)
+    {
+        test_data_w[i] = i;
+    }
+    if (at24cxx_write(&at24c32, 0, test_data_w, TEST_DATA_SIZE) != AT24CXX_NOERR)
+    {
+        debug("AT24C32 - WRITE ERROR OCCURED!!!\r\n");
+    }
+    // Read data
+    uint8_t test_data_r[TEST_DATA_SIZE];
+    if (at24cxx_read(&at24c32, 0, test_data_r, TEST_DATA_SIZE))
+    {
+        debug("AT24C32 - READ ERROR OCCURED!!!\r\n");
+    }
+    bool is_different = false;
+    for (int i = 0; i < TEST_DATA_SIZE; i++)
+    {
+        if (test_data_r[i] != test_data_w[i])
+        {
+            debug("AT24C32 - diff values: W:[0x%02x] vs R:[0x%02x]\r\n", test_data_w[i], test_data_r[i]);
+            is_different = true;
+        }
+    }
+    if (!is_different)
+    {
+        debug("AT24C32 - R and W data is sthe same!!!");
+    }
+
+
+
 
     // DS3231
     #define DS3231_I2C_ADDR 0x68
@@ -36,6 +70,8 @@ int main()
     #define DS3231_SCL PB_6
     //I2C i2c(DS3231_SDA, DS3231_SCL); @note common i2c with AT24CXX
     ds3231_mbed_init(&i2c, DS3231_I2C_ADDR);
+
+
 
 
     // TM1637
@@ -77,6 +113,9 @@ int main()
     tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
     wait_us(1000*1000);
     tm1637_clear(&disp);
+
+
+
 
     // DS18B20
     const int MAX_SENSORS = 16;

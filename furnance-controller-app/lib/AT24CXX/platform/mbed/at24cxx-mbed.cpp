@@ -32,33 +32,59 @@ at24cxx_status at24cxx_io_deinit(at24cxx* const dev)
     return AT24CXX_NOERR;
 }
 
-// //-----------------------------------------------------------------------------
-// at24cxx_status at24cxx_write_buffer(uint16_t addr, uint8_t* buf, size_t buf_size)
-// {
-//     // Check space
-// 	if (!at24cxx_check_space(addr, buf_size))
-//     {
-//         return AT24CXX_OUT_OF_RANGE;
-//     }
+//-----------------------------------------------------------------------------
+at24cxx_status at24cxx_write_buffer(const at24cxx* const dev, uint32_t addr,
+                                    const uint8_t* buf, size_t buf_size)
+{
+    // Check space
+	if (!at24cxx_check_space(dev, addr, buf_size))
+    {
+        return AT24CXX_OUT_OF_RANGE;
+    }
 
-//     int ack = _i2c->write((int)addr, (char*)buf, buf_size);
-//     if (ack != 0)
-//     {
-//         return AT24CXX_ERR;
-//     }
-//     return AT24CXX_NOERR;
-// }
+    const at24cxx_mbed* const pd = (at24cxx_mbed*)dev->platform_dev;
+    uint8_t address[2];
+    address[0] = addr >> 8;
+    address[1] = addr;
 
-// //-----------------------------------------------------------------------------
-// at24cxx_status at24cxx_read_buffer(uint16_t addr, uint8_t* buf, size_t buf_size)
-// {
-//     int retVal = _i2c->read(addr, (char*)buf, buf_size);
-//     if (retVal != 0)
-//     {
-//         return AT24CXX_ERR;
-//     }
-//     return AT24CXX_NOERR;
-// }
+    int ack = pd->i2c->write((int)dev->addr, (char*)address, 2, true);
+    if (ack != 0)
+    {
+        return AT24CXX_I2C_ERR;
+    }
+
+    ack = pd->i2c->write((int)dev->addr, (char*)buf, buf_size);
+    if (ack != 0)
+    {
+        return AT24CXX_I2C_ERR;
+    }
+    return AT24CXX_NOERR;
+}
+
+//-----------------------------------------------------------------------------
+at24cxx_status at24cxx_read_buffer(const at24cxx* const dev, uint32_t addr,
+                                   uint8_t* buf, size_t buf_size)
+{
+    const at24cxx_mbed* const pd = (at24cxx_mbed*)dev->platform_dev;
+    const uint8_t addr_len = 2; //at24cxx_devices[dev->type].word_addr_len;
+    uint8_t address[addr_len];
+    address[0] = addr >> 8;
+    address[1] = addr;
+
+    // Write addr
+    int ack = pd->i2c->write((int)dev->addr, (char*)address, addr_len, true);
+    if (ack != 0)
+    {
+        return AT24CXX_I2C_ERR;
+    }
+    // Sequential Read
+    ack = pd->i2c->read(dev->addr, (char*)buf, buf_size);
+    if (ack != 0)
+    {
+        return AT24CXX_I2C_ERR;
+    }
+    return AT24CXX_NOERR;
+}
 
 //-----------------------------------------------------------------------------
 void at24cxx_enable_wp(at24cxx* const dev, bool enable)
