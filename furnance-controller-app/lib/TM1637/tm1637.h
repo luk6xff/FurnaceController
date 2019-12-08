@@ -62,8 +62,6 @@ extern "C" {
 //The memory addresses are:
 //   0   1   2   3
 
-
-
 // Icons Grid 1
 #define S7_DP1  0x0080
 #define S7_ICON_GR1 (0x0000)
@@ -299,12 +297,11 @@ extern const uint16_t TM1637_FONT[];
 //  Grid encoded in 8 MSBs, tm1637_icon pattern encoded in 16 LSBs
 typedef enum
 {
-  DP1   = ( 1<<24) | S7_DP1,  /**<  Digit 1 */
-  DP2   = ( 2<<24) | S7_DP2,  /**<  Digit 2 */
-  DP3   = ( 3<<24) | S7_DP3,  /**<  Digit 3 */
-  DP4   = ( 4<<24) | S7_DP4,  /**<  Digit 4 */
-
-  COL2  = ( 2<<24) | S7_DP2,  /**<  Column 2 */
+    DP1   = ( 1<<24) | S7_DP1,  /**<  Digit 1 */
+    DP2   = ( 2<<24) | S7_DP2,  /**<  Digit 2 */
+    DP3   = ( 3<<24) | S7_DP3,  /**<  Digit 3 */
+    DP4   = ( 4<<24) | S7_DP4,  /**<  Digit 4 */
+    COL2  = ( 2<<24) | S7_DP2,  /**<  Column 2 */
 } tm1637_icon;
 
 typedef enum
@@ -339,13 +336,6 @@ typedef struct
     tm1637_display_data display_buffer;
     tm1637_udc_data ud_chars;
     void* platform_dev;
-    // Callbacks HW dependent functions - ddeclared as extern to force user to
-    // implement them
-    //void (*tm1637_delay_us)(tm1637* const dev, uint32_t us);
-    //void (*tm1637_set_dio_mode)(tm1637* const dev, tm1637_dio_mode mode);
-    //void (*tm1637_set_dio)(tm1637* const dev, tm1637_pin_state state);
-    //tm1637_pin_state (*tm1637_get_dio)(tm1637* const dev);
-    //void (*tm1637_set_clk)(tm1637* const dev, tm1637_pin_state state);
 } tm1637;
 
 
@@ -355,7 +345,6 @@ typedef struct
  *        Also Supports up to 16 Keys. Serial bus interface device.
  */
 void tm1637_init(tm1637* const dev);
-
 
 /**
  * @brief Clear the screen and locate to 0

@@ -1,6 +1,7 @@
 #include "mbed.h"
-#include "../lib/DS1820/platform/mbed/ds1820-mbed.h"
+#include "../lib/AT24CXX/platform/mbed/at24cxx-mbed.h"
 #include "../lib/DS3231/platform/mbed/ds3231-mbed.h"
+#include "../lib/DS1820/platform/mbed/ds1820-mbed.h"
 #include "../lib/TM1637/platform/mbed/tm1637-mbed.h"
 
 
@@ -10,18 +11,41 @@ DigitalOut led(LED1);
 
 int main()
 {
+
+    // AT24CXX
+    #define AT24CXX_I2C_ADDR 0x68
+    #define AT24CXX_SDA PB_7
+    #define AT24CXX_SCL PB_6
+    #define AT24CXX_WP PB_8
+    I2C i2c(AT24CXX_SDA, AT24CXX_SCL);
+    at24cxx_mbed at24c32_mbed =
+    {
+        &i2c,
+        new DigitalOut(AT24CXX_WP)
+    };
+    at24cxx at24c32 =
+    {
+        .type = AT24C32,
+        .addr = AT24CXX_I2C_ADDR,
+    };
+    at24cxx_mbed_init(&at24c32, &at24c32_mbed);
+
     // DS3231
     #define DS3231_I2C_ADDR 0x68
     #define DS3231_SDA PB_7
     #define DS3231_SCL PB_6
-    I2C i2c(DS3231_SDA, DS3231_SCL);
+    //I2C i2c(DS3231_SDA, DS3231_SCL); @note common i2c with AT24CXX
     ds3231_mbed_init(&i2c, DS3231_I2C_ADDR);
 
 
     // TM1637
     #define LED_DIO PA_0
     #define LED_CLK PA_5
-    tm1637_mbed disp_mbed = { DigitalInOut(LED_DIO), DigitalOut(LED_CLK) };
+    tm1637_mbed disp_mbed =
+    {
+        DigitalInOut(LED_DIO),
+        DigitalOut(LED_CLK)
+    };
     tm1637 disp;
     const char str[]  = {"HI.L"};
     const uint8_t raw[]  = {0x31, 0x32, 0x33, 0x34};
