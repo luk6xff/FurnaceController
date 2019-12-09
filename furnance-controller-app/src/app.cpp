@@ -61,9 +61,12 @@ void App::run()
 void App::init()
 {
     debug_if(DEBUG_ON, "--- Hello from INIT ---\r\n");
+    // Configure Watchdog
     watchdog.start(WATCHDOG_TIMEOUT_MS);
     watchdog_ticker.attach(mbed::callback(this, &App::ev_kick_watchdog), 5); // every 5 seconds
-    // Read EEPROM Settings
+
+    // Configure EEPROM Settings
+    AppSettings::instance().init();
 }
 
 //------------------------------------------------------------------------------
@@ -169,6 +172,7 @@ void App::check_time()
 {
     if (update_time)
     {
+        static bool blink_on = false;
         SystemTime current_time;
         int ret = SystemRtc::instance().get_time(current_time);
         if (ret > 0)
@@ -178,6 +182,8 @@ void App::check_time()
         else
         {
             debug_if(DEBUG_ON, "Current time: %s\r\n", SystemRtc::time_date_string(current_time));
+            blink_on = blink_on^1;
+            disp.print_time(current_time.hours, current_time.minutes, blink_on);
         }
         update_time = false;
     }

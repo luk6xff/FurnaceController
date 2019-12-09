@@ -22,12 +22,19 @@ typedef struct
 
 public:
     static AppSettings& instance();
+    void init();
 
     const Settings& get_defaults();
+    const Settings& get_current();
+
+    bool save_settings(const Settings &settings);
+    bool read_rettings();
+    void set_defaults();
 
 private:
     AppSettings();
     Settings default_settings;
+    Settings current_settings;
 
     // AT24C32
     I2C at24c32_i2c;

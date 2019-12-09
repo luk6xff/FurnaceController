@@ -1,6 +1,8 @@
 #include "app_settings.h"
 #include "hw_config.h"
 
+#define DEBUG_ON 1
+
 //------------------------------------------------------------------------------
 AppSettings::AppSettings()
     : at24c32_i2c(AT24CXX_SDA, AT24CXX_SCL)
@@ -37,11 +39,69 @@ AppSettings&  AppSettings::instance()
     return settings;
 }
 
+//------------------------------------------------------------------------------
+void AppSettings::init()
+{
+    if (read_rettings())
+    {
+        // Check if settings are valid
+        if (get_current().magic == get_defaults().magic && \
+            get_current().version == get_defaults().version)
+        {
+            debug_if(DEBUG_ON, "APP_SETTINGS: Read eeprom settings look ok\r\n");
+            // Check if values are ok
+        }
+        else
+        {
+            debug_if(DEBUG_ON, "APP_SETTINGS: Read eeprom settings are invalid, updating with defaults\r\n");
+            if (!save_settings(get_defaults()))
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: Updating eeprom with defaults failed!, setting current as defaults\r\n");
+                current_settings = default_settings;
+            }
+            else
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: Updating eeprom with defaults succeed!\r\n");
+            }
+        }
+    }
+    else
+    {
+        debug_if(DEBUG_ON, "APP_SETTINGS: Read eeprom settings failed!, setting current as defaults\r\n");
+        current_settings = default_settings;
+    }
+}
 
 //------------------------------------------------------------------------------
 const AppSettings::Settings& AppSettings::get_defaults()
 {
     return default_settings;
+}
+
+//------------------------------------------------------------------------------
+const AppSettings::Settings& AppSettings::get_current()
+{
+    return current_settings;
+}
+
+//------------------------------------------------------------------------------
+bool AppSettings::save_settings(const Settings &settings)
+{
+    if (at24cxx_write(&at24c32, 0, (const uint8_t*)&settings, sizeof(Settings)) != AT24CXX_NOERR)
+    {
+        return false;
+    }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+bool AppSettings::read_rettings()
+{
+    if (at24cxx_read(&at24c32, 0, (uint8_t*)&current_settings, sizeof(Settings)) != AT24CXX_NOERR)
+    {
+        return false;
+    }
+    return true;
 }
 
 //------------------------------------------------------------------------------

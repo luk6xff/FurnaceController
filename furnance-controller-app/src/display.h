@@ -13,6 +13,7 @@ public:
     void enable(bool on_off);
 
     void print_temperature(float temp);
+    void print_time(uint8_t hour, uint8_t min, bool blink = false);
 
 private:
     tm1637 disp;

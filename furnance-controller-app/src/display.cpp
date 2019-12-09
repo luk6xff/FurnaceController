@@ -78,7 +78,34 @@ void Display::print_temperature(float temp)
     }
 
     tm1637_clear(&disp);
+    tm1637_set_brightness(&disp, TM1637_BRT6);
     tm1637_print(&disp, (const uint8_t*)buf, num_of_chars);
+}
+
+
+//------------------------------------------------------------------------------
+void Display::print_time(uint8_t hour, uint8_t min, bool blink)
+{
+    const uint8_t buf_size = 5;
+    uint8_t buf[buf_size];
+
+    buf[0] = hour / 10;
+    buf[1] = hour % 10;
+    if (blink)
+    {
+        buf[2] = '.';
+        buf[3] = min / 10;
+        buf[4] = min % 10;
+    }
+    else
+    {
+        buf[2] = min / 10;
+        buf[3] = min % 10;
+        buf[4] = 0;
+    }
+    tm1637_clear(&disp);
+    tm1637_set_brightness(&disp, TM1637_BRT3);
+    tm1637_print(&disp, (const uint8_t*)buf, buf_size);
 }
 
 //------------------------------------------------------------------------------
