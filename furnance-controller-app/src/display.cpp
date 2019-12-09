@@ -81,6 +81,4 @@ void Display::print_temperature(float temp)
     tm1637_print(&disp, (const uint8_t*)buf, num_of_chars);
 }
 
-
-
 //------------------------------------------------------------------------------

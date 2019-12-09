@@ -26,9 +26,14 @@ public:
     const Settings& get_defaults();
 
 private:
-
     AppSettings();
     Settings default_settings;
+
+    // AT24C32
+    I2C at24c32_i2c;
+    DigitalOut at24c32_wp;
+    at24cxx_mbed at24c32_mbed;
+    at24cxx at24c32;
 };
 
 #endif // __APP_SETTINGS_H__
