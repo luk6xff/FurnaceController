@@ -30,6 +30,7 @@ int main()
     test_app();
 #else
     App::instance().run();
+    return 0;
 #endif
 }
 
@@ -145,14 +146,14 @@ static void test_app()
 
 
     // DS18B20
-    const int MAX_SENSORS = 16;
+    const int MAX_SENSORS = 1;
     #define DS18B20_DATA_PIN PE_12
     int devices_found=0;
     ds1820_mbed_init(DS18B20_DATA_PIN, NC);
     // Initialize global state variables
     ds1820_search_rom_setup();
     // Loop to find all devices on the data line
-    while (ds1820_search_rom() && devices_found<MAX_SENSORS-1)
+    while (ds1820_search_rom() && devices_found<MAX_SENSORS)
     {
         devices_found++;
     }
@@ -176,7 +177,7 @@ static void test_app()
                 buf[4] = 1; // Degrees char
                 tm1637_clear(&disp);
                 tm1637_print(&disp, (const uint8_t*)buf, sizeof(buf));
-                wait_us(1000*2000);
+                wait_us(1000);
             }
         }
     }

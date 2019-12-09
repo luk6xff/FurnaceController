@@ -109,3 +109,11 @@ void Display::print_time(uint8_t hour, uint8_t min, bool blink)
 }
 
 //------------------------------------------------------------------------------
+void Display::print_error(AppError error)
+{
+    tm1637_clear(&disp);
+    tm1637_set_brightness(&disp, TM1637_BRT5);
+    tm1637_print(&disp, (const uint8_t*)app_errors[error], 4);
+}
+
+//------------------------------------------------------------------------------

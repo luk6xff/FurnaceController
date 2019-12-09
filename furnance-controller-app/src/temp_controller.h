@@ -42,13 +42,13 @@ public:
 
 
 private:
-    //ds1820 temp_sensor;
     bool is_sensor_available();
     void enable_relay(TempCtrlRelayStatus state);
 
-
 private:
-    int sensors_num;
+    //ds1820 temp_sensor;
+    int ds1820_sensors_found;
+    const int ds1820_sensors_num;
     TempCtrlSettings temperatures;
 
     DigitalOut relay_pin;

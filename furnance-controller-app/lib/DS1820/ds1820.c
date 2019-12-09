@@ -11,7 +11,7 @@
  *        ds1820_rom[1] thru ds1820_rom[6] is the 48-bit unique serial number
  *        ds1820_rom[7] is the device CRC
 */
-static char ds1820_rom[8];
+static uint8_t ds1820_rom[8];
 #define FAMILY_CODE ds1820_rom[0]
 #define FAMILY_CODE_DS1820 0x10
 #define FAMILY_CODE_DS18S20 0x10
@@ -23,11 +23,11 @@ static char ds1820_rom[8];
  *        which is automaticaly called from any function
  *        using the RAM values.
  */
-static char ds1820_ram[9];
+static uint8_t ds1820_ram[9];
 
 static bool _ds1820_done_flag;
 static int  _ds1820_last_descrepancy;
-static char _ds1820_search_ds1820_rom[8];
+static uint8_t _ds1820_search_ds1820_rom[8];
 bool _ds1820_parasite_power;
 
 
@@ -35,12 +35,12 @@ bool _ds1820_parasite_power;
 //------------------------------------------------------------------------------
 // @brief PRIVATE FUNCTIONS
 //------------------------------------------------------------------------------
-static char crc_byte (char crc, char byte);
+static uint8_t crc_byte (uint8_t crc, uint8_t byte);
 static void match_rom(void);
 static void skip_rom(void);
-static bool ds1820_search_rom_routine(char command);
-static void onewire_byte_out(char data);
-static char onewire_byte_in(void);
+static bool ds1820_search_rom_routine(uint8_t command);
+static void onewire_byte_out(uint8_t data);
+static uint8_t onewire_byte_in(void);
 
 
 //------------------------------------------------------------------------------
@@ -60,9 +60,9 @@ void ds1820_init(bool parasite_powered)
 }
 
 //------------------------------------------------------------------------------
-void onewire_byte_out(char data)
+void onewire_byte_out(uint8_t data)
 {
-    // Output data character (least sig bit first).
+    // Output data uint8_tacter (least sig bit first).
     for (int n=0; n<8; n++)
     {
         ds1820_onewire_bit_out(data & 0x01);
@@ -71,9 +71,9 @@ void onewire_byte_out(char data)
 }
 
 //------------------------------------------------------------------------------
-char onewire_byte_in()
+uint8_t onewire_byte_in()
 {   // Read byte, least sig byte first
-    char answer = 0x00;
+    uint8_t answer = 0x00;
     for (int i=0; i<8; i++)
     {
         answer = answer >> 1; // shift over to make room for the next bit
@@ -96,11 +96,11 @@ bool ds1820_search_alarm()
 }
 
 //------------------------------------------------------------------------------
-bool ds1820_search_rom_routine(char command)
+bool ds1820_search_rom_routine(uint8_t command)
 {
     int descrepancy_marker, ROM_bit_index;
     bool return_value, Bit_A, Bit_B;
-    char byte_counter, bit_mask;
+    uint8_t byte_counter, bit_mask;
 
     return_value=false;
     if (!_ds1820_done_flag)
@@ -226,7 +226,7 @@ void match_rom()
     // Used to select a specific device
     int i;
     ds1820_onewire_reset();
-    onewire_byte_out( 0x55);  //Match ROM command
+    onewire_byte_out(0x55);  //Match ROM command
     for (i=0; i<8; i++)
     {
         onewire_byte_out(ds1820_rom[i]);
@@ -243,7 +243,7 @@ void skip_rom()
 //------------------------------------------------------------------------------
 bool ds1820_rom_checksum_error()
 {
-    char crc=0x00;
+    uint8_t crc=0x00;
     int i;
     for(i=0;i<7;i++) // Only going to shift the lower 7 bytes
         crc = crc_byte(crc, ds1820_rom[i]);
@@ -254,7 +254,7 @@ bool ds1820_rom_checksum_error()
 //------------------------------------------------------------------------------
 bool ds1820_ram_checksum_error()
 {
-    char crc=0x00;
+    uint8_t crc=0x00;
     int i;
     ds1820_read_ram();
     for(i=0;i<8;i++) // Only going to shift the lower 8 bytes
@@ -266,7 +266,7 @@ bool ds1820_ram_checksum_error()
 }
 
 //------------------------------------------------------------------------------
-char crc_byte(char crc, char byte)
+uint8_t crc_byte(uint8_t crc, uint8_t byte)
 {
     int j;
     for(j=0; j<8; j++)
@@ -312,7 +312,7 @@ void ds1820_convert_temperature(DS1820_Devices_t device)
 {
     // Convert temperature into scratchpad RAM for all devices at once
     int delay_time = 750; // Default delay time
-    char resolution;
+    uint8_t resolution;
     if (device == ALL)
     {
         skip_rom();          // Skip ROM command, will convert for ALL devices
