@@ -18,8 +18,8 @@ class SystemRtc
 {
 public:
     static SystemRtc& instance();
-    bool set_time(const SystemTime& time);
-    bool get_time(SystemTime& time);
+    int set_time(const SystemTime& time);
+    int get_time(SystemTime& time);
     float get_temperature();
     static char* time_string(const SystemTime& time);
     static char* date_string(const SystemTime& time);
@@ -30,6 +30,9 @@ public:
 private:
     explicit SystemRtc();
     SystemRtc& operator=(const SystemRtc& rtc);
+
+private:
+    I2C i2c; // DS3231 i2c controller
 };
 
 

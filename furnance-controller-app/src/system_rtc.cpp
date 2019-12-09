@@ -11,13 +11,13 @@ SystemRtc & SystemRtc::instance()
 
 //------------------------------------------------------------------------------
 SystemRtc::SystemRtc()
+    : i2c(DS3231_SDA, DS3231_SCL)
 {
-    I2C i2c(DS3231_SDA, DS3231_SCL);
     ds3231_mbed_init(&i2c, DS3231_I2C_ADDR);
 }
 
 //------------------------------------------------------------------------------
-bool SystemRtc::set_time(const SystemTime& time)
+int SystemRtc::set_time(const SystemTime& time)
 {
 
     ds3231_time_t _time;
@@ -45,7 +45,7 @@ bool SystemRtc::set_time(const SystemTime& time)
 }
 
 //------------------------------------------------------------------------------
-bool SystemRtc::get_time(SystemTime& time)
+int SystemRtc::get_time(SystemTime& time)
 {
     ds3231_time_t _time;
     ds3231_calendar_t _cal;
@@ -54,7 +54,7 @@ bool SystemRtc::get_time(SystemTime& time)
     {
         return 1; // error
     }
-        if (ds3231_get_calendar(&_cal) != 0)
+    if (ds3231_get_calendar(&_cal) != 0)
     {
         return 2; // error
     }

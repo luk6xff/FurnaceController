@@ -12,8 +12,11 @@ public:
     void set_brightness(uint8_t brightness);
     void enable(bool on_off);
 
+    void print_temperature(float temp);
+
 private:
     tm1637 disp;
+    tm1637_mbed disp_mbed;
 };
 
 

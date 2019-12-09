@@ -1,17 +1,44 @@
-#include "mbed.h"
-#include "../lib/AT24CXX/platform/mbed/at24cxx-mbed.h"
-#include "../lib/DS3231/platform/mbed/ds3231-mbed.h"
-#include "../lib/DS1820/platform/mbed/ds1820-mbed.h"
-#include "../lib/TM1637/platform/mbed/tm1637-mbed.h"
+#define TEST_APP
+#undef TEST_APP
+
+
+#ifdef TEST_APP
+    #include "mbed.h"
+    #include "../lib/AT24CXX/platform/mbed/at24cxx-mbed.h"
+    #include "../lib/DS3231/platform/mbed/ds3231-mbed.h"
+    #include "../lib/DS1820/platform/mbed/ds1820-mbed.h"
+    #include "../lib/TM1637/platform/mbed/tm1637-mbed.h"
+
+    /**
+     * @brief Test app used during development for modules testing
+     */
+    static void test_app();
+
+#else
+    #include "app.h"
+#endif
 
 
 
-DigitalOut led(LED1);
 
 
+//------------------------------------------------------------------------------
+// MAIN
 int main()
 {
+#ifdef TEST_APP
+    test_app();
+#else
+    App::instance().run();
+#endif
+}
 
+//------------------------------------------------------------------------------
+#ifdef TEST_APP
+
+static void test_app()
+{
+    DigitalOut led(LED1);
     // AT24CXX
     #define AT24CXX_I2C_ADDR 0x07 // A0=1, A1=1, A2=1
     #define AT24CXX_SDA PB_7
@@ -154,3 +181,6 @@ int main()
         }
     }
 }
+
+#endif // TEST_APP
+//------------------------------------------------------------------------------
