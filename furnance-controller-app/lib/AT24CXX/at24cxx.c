@@ -168,7 +168,6 @@ at24cxx_status at24cxx_read(const at24cxx* const dev, uint32_t addr,
                             uint8_t* data, uint32_t data_size)
 {
     at24cxx_status ret = AT24CXX_NOERR;
-    const uint8_t page_size = at24cxx_devices[dev->type].page_size;
 
     if (!at24cxx_check_space(dev, addr, data_size))
     {

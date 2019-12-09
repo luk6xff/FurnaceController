@@ -185,6 +185,7 @@ void tm1637_init(tm1637* const dev)
     dev->columns_num = TM1637_DISPLAY_NR_DIGITS;
     dev->display_on_off = TM1637_DSP_ON;
     dev->brightness = TM1637_BRT_DEF;
+    dev->ud_chars[0] = TM1637_CHAR_DGR;
     tm1637_clear(dev);
     _write_cmd(dev, TM1637_DSP_CTRL_CMD, dev->display_on_off | dev->brightness);                                 // Display control cmd, display on/off, brightness
     _write_cmd(dev, TM1637_DATA_SET_CMD, TM1637_DATA_WR | TM1637_ADDR_INC | TM1637_MODE_NORM); // Data set cmd, normal mode, auto incr, write data
@@ -350,11 +351,11 @@ void tm1637_print(tm1637* const dev, const uint8_t* data, size_t data_len)
                 // No Cursor Update here
             }
         }
-        else if (data[i] < TM1637_DISPLAY_NR_UDC) // 0...8
+        else if (data[i] < TM1637_DISPLAY_NR_UDC) // 1...8
         {
             //Character to write
             write_char = true;
-            font = dev->ud_chars[data[i]];
+            font = dev->ud_chars[data[i]-1];
         }
 
         // Encode all the ASCII characters
@@ -493,8 +494,8 @@ uint8_t _read(tm1637* const dev)
     tm1637_set_dio_mode(dev, TM1637_DIO_OUTPUT);
     tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
-    // dummy Ack
-    tm1637_set_dio(dev, TM1637_PIN_LOW); //Ack
+    // Dummy Ack
+    tm1637_set_dio(dev, TM1637_PIN_LOW); // Ack
     tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
     tm1637_set_clk(dev, TM1637_PIN_HIGH);
@@ -502,7 +503,7 @@ uint8_t _read(tm1637* const dev)
     tm1637_set_clk(dev, TM1637_PIN_LOW);
     tm1637_delay_us(dev, TM1637_BIT_DELAY);
 
-    tm1637_set_dio(dev, TM1637_PIN_HIGH); //idle
+    tm1637_set_dio(dev, TM1637_PIN_HIGH); // Idle
 
     return keycode;
 }

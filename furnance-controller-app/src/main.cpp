@@ -144,10 +144,11 @@ int main()
             {
                 float temp = ds1820_read_temperature(CELSIUS);
                 debug("%3.1f\r\n",temp);
-                char buf[4];
-                sprintf(buf, "%2.1f*",temp);
+                char buf[5];
+                sprintf(buf, "%2.1f",temp);
+                buf[4] = 1; // Degrees char
                 tm1637_clear(&disp);
-                tm1637_print(&disp, (const uint8_t*)buf, 4);
+                tm1637_print(&disp, (const uint8_t*)buf, sizeof(buf));
                 wait_us(1000*2000);
             }
         }
