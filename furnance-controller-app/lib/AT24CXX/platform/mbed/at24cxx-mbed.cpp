@@ -43,17 +43,22 @@ at24cxx_status at24cxx_write_buffer(const at24cxx* const dev, uint32_t addr,
     }
 
     const at24cxx_mbed* const pd = (at24cxx_mbed*)dev->platform_dev;
-    uint8_t address[2];
-    address[0] = addr >> 8;
-    address[1] = addr;
+    // uint8_t address[2];
+    // address[0] = addr >> 8;
+    // address[1] = addr;
+    //int ack = pd->i2c->write((int)dev->addr, (char*)address, 2, true);
+    // if (ack != 0)
+    // {
+    //     return AT24CXX_I2C_ERR;
+    // }
+    uint8_t tmp[2+buf_size];
+    tmp[0] = addr >> 8;
+    tmp[1] = addr;
+    memcpy(&tmp[2], buf, buf_size);
 
-    int ack = pd->i2c->write((int)dev->addr, (char*)address, 2, true);
-    if (ack != 0)
-    {
-        return AT24CXX_I2C_ERR;
-    }
 
-    ack = pd->i2c->write((int)dev->addr, (char*)buf, buf_size);
+    //ack = pd->i2c->write((int)dev->addr, (char*)buf, buf_size);
+    int ack = pd->i2c->write((int)dev->addr, (char*)tmp, sizeof(tmp));
     if (ack != 0)
     {
         return AT24CXX_I2C_ERR;

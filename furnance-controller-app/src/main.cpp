@@ -30,20 +30,20 @@ int main()
     };
     at24cxx_mbed_init(&at24c32, &at24c32_mbed);
     // EEPROM tests
-    #define TEST_DATA_SIZE 64
+    #define TEST_DATA_SIZE 2055
     // Write data
-    uint8_t test_data_w[TEST_DATA_SIZE];
+    static uint8_t test_data_w[TEST_DATA_SIZE];
     for (int i = 0; i < TEST_DATA_SIZE; i++)
     {
-        test_data_w[i] = i;
+        test_data_w[i] = 0x13;
     }
-    if (at24cxx_write(&at24c32, 0, test_data_w, TEST_DATA_SIZE) != AT24CXX_NOERR)
+    if (at24cxx_write(&at24c32, 367, test_data_w, TEST_DATA_SIZE) != AT24CXX_NOERR)
     {
         debug("AT24C32 - WRITE ERROR OCCURED!!!\r\n");
     }
     // Read data
-    uint8_t test_data_r[TEST_DATA_SIZE];
-    if (at24cxx_read(&at24c32, 0, test_data_r, TEST_DATA_SIZE))
+    static uint8_t test_data_r[TEST_DATA_SIZE];
+    if (at24cxx_read(&at24c32, 367, test_data_r, TEST_DATA_SIZE))
     {
         debug("AT24C32 - READ ERROR OCCURED!!!\r\n");
     }
@@ -52,13 +52,13 @@ int main()
     {
         if (test_data_r[i] != test_data_w[i])
         {
-            debug("AT24C32 - diff values: W:[0x%02x] vs R:[0x%02x]\r\n", test_data_w[i], test_data_r[i]);
+            debug("AT24C32 - diff values: i=%d,  W:[0x%02x] vs R:[0x%02x]\r\n",i, test_data_w[i], test_data_r[i]);
             is_different = true;
         }
     }
     if (!is_different)
     {
-        debug("AT24C32 - R and W data is sthe same!!!");
+        debug("AT24C32 - R and W data is sthe same!!!\r\n");
     }
 
 

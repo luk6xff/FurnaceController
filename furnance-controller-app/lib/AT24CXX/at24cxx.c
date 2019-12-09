@@ -99,27 +99,66 @@ at24cxx_status at24cxx_write(const at24cxx* const dev, uint32_t addr,
 {
     at24cxx_status ret = AT24CXX_NOERR;
     const uint8_t page_size = at24cxx_devices[dev->type].page_size;
-    uint8_t current_addr = 0;
+    size_t bytes_sent = 0;
 
     if (!at24cxx_check_space(dev, addr, data_size))
     {
         return AT24CXX_OUT_OF_RANGE;
     }
 
-    // Number of blocks of page size to be written.
-    size_t blocks_num       = data_size / page_size;
-    // Number of remaining bytes to be written.
-    size_t remain_bytes_num = data_size % page_size;
+    size_t page_num = 0;
+    size_t bytes_to_be_send_left = 0;
+    size_t bytes_to_be_send_right = 0;
 
-    for (size_t i = 0; i < blocks_num; i++)
+    size_t page_constraint_left = addr % page_size;
+    size_t page_constraint_right = (addr+data_size) % page_size;
+
+    if (page_constraint_left == 0)
     {
-        uint8_t offset = i*page_size;
+        bytes_to_be_send_left = 0;
+    }
+    else
+    {
+        bytes_to_be_send_left = page_size - page_constraint_left;
+        // Send left side of the data
+        ret = at24cxx_write_buffer(dev, addr, data, bytes_to_be_send_left);
+        at24cxx_wait_for_ready(dev);
+        if (ret != AT24CXX_NOERR)
+        {
+            return ret;
+        }
+        bytes_sent += bytes_to_be_send_left;
+    }
+
+    if (page_constraint_right == 0)
+    {
+        bytes_to_be_send_right = 0;
+    }
+    else
+    {
+        bytes_to_be_send_right = page_constraint_right;
+        // Send right side of the data
+        ret = at24cxx_write_buffer(dev, (addr+data_size-bytes_to_be_send_right), &data[data_size-bytes_to_be_send_right], bytes_to_be_send_right);
+        at24cxx_wait_for_ready(dev);
+        if (ret != AT24CXX_NOERR)
+        {
+            return ret;
+        }
+        bytes_sent += bytes_to_be_send_right;
+    }
+
+    // Send full pages
+    while (bytes_sent < data_size)
+    {
+        const size_t offset = bytes_to_be_send_left + (page_num*page_size);
         ret = at24cxx_write_buffer(dev, addr + offset, &data[offset], page_size);
         at24cxx_wait_for_ready(dev);
         if (ret != AT24CXX_NOERR)
         {
             return ret;
         }
+        page_num++;
+        bytes_sent += page_size;
     }
     return ret;
 }
@@ -136,21 +175,13 @@ at24cxx_status at24cxx_read(const at24cxx* const dev, uint32_t addr,
         return AT24CXX_OUT_OF_RANGE;
     }
 
-    // Number of blocks of page size to be read.
-    size_t blocks_num       = data_size / page_size;
-    // Number of remaining bytes to be read.
-    size_t remain_bytes_num = data_size % page_size;
-
-    for (size_t i = 0; i < blocks_num; i++)
+    ret = at24cxx_read_buffer(dev, addr, data, data_size);
+    at24cxx_wait_for_ready(dev);
+    if (ret != AT24CXX_NOERR)
     {
-        uint8_t offset = i*page_size;
-        ret = at24cxx_read_buffer(dev, addr+offset, &data[offset], page_size);
-        at24cxx_wait_for_ready(dev);
-        if (ret != AT24CXX_NOERR)
-        {
-            return ret;
-        }
+        return ret;
     }
+
     return ret;
 }
 
@@ -184,7 +215,7 @@ void at24cxx_wait_for_ready(const at24cxx* const dev)
     //do
     {
         //ret = at24cxx_read_buffer(dev, addr, &cmd, 1);
-        at24cxx_delay_ms(100);
+        at24cxx_delay_ms(10);
     }// while (ret == AT24CXX_I2C_ERR);
 }
 
