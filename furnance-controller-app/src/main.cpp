@@ -89,10 +89,10 @@ static void test_app()
     #define AT24CXX_SDA PB_7
     #define AT24CXX_SCL PB_6
     #define AT24CXX_WP PB_8
-    I2C i2c(AT24CXX_SDA, AT24CXX_SCL);
+    I2C at24c32_i2c(AT24CXX_SDA, AT24CXX_SCL);
     at24cxx_mbed at24c32_mbed =
     {
-        &i2c,
+        &at24c32_i2c,
         new DigitalOut(AT24CXX_WP)
     };
     at24cxx at24c32 =
@@ -140,19 +140,8 @@ static void test_app()
     #define DS3231_I2C_ADDR 0x68
     #define DS3231_SDA PB_7
     #define DS3231_SCL PB_6
-    struct SystemTime
-    {
-        uint16_t year;
-        uint8_t month;
-        uint8_t date;
-        uint8_t day;
-        uint8_t hours;
-        uint8_t minutes;
-        uint8_t seconds;
-    };
-    //I2C i2c(DS3231_SDA, DS3231_SCL); @note common i2c with AT24CXX
-    ds3231_mbed_init(&i2c, DS3231_I2C_ADDR);
-    SystemTime systime;
+    I2C ds3231_i2c(DS3231_SDA, DS3231_SCL);
+    ds3231_mbed_init(&ds3231_i2c, DS3231_I2C_ADDR);
     ds3231_time_t time;
     ds3231_calendar_t cal;
 
@@ -164,27 +153,21 @@ static void test_app()
     {
         debug("ds3231_get_calendar error occured!\r\n");
     }
-    systime.seconds   = time.seconds;
-    systime.minutes   = time.minutes;
-    systime.hours     = time.hours;
-    systime.day       = cal.day;
-    systime.date      = cal.date;
-    systime.month     = cal.month;
-    systime.year      = cal.year;
 
     const uint8_t time_buf_size = 5;
     uint8_t time_buf[time_buf_size];
 
-    time_buf[0] = systime.hours / 10;
-    time_buf[1] = systime.hours % 10;
+    time_buf[0] = time.hours / 10;
+    time_buf[1] = time.hours % 10;
     time_buf[2] = '.';
-    time_buf[3] = systime.minutes / 10;
-    time_buf[4] = systime.minutes % 10;
+    time_buf[3] = time.minutes / 10;
+    time_buf[4] = time.minutes % 10;
 
     tm1637_clear(&disp);
     tm1637_set_brightness(&disp, TM1637_BRT3);
     tm1637_print(&disp, (const uint8_t*)time_buf, time_buf_size);
-
+    debug("TIME: %u:%u:%u\r\n", time.hours, time.minutes, time.seconds);
+    debug("CALENDAR: %u-%u-%u %u\r\n", cal.year, cal.month, cal.date, cal.day);
 
 
 
@@ -222,6 +205,20 @@ static void test_app()
                 tm1637_print(&disp, (const uint8_t*)buf, sizeof(buf));
                 wait_us(1000);
             }
+
+            // Time
+            if (ds3231_get_time(&time) != 0)
+            {
+                debug("ds3231_get_time error occured!\r\n");
+                continue;
+            }
+            if (ds3231_get_calendar(&cal) != 0)
+            {
+                debug("ds3231_get_calendar error occured!\r\n");
+                continue;
+            }
+            debug("TIME: %u:%u:%u\r\n", time.hours, time.minutes, time.seconds);
+            debug("CALENDAR: %u-%u-%u %u\r\n", cal.year, cal.month, cal.date, cal.day);
         }
     }
 }

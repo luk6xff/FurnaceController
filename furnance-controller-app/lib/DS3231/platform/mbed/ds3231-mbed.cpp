@@ -30,23 +30,13 @@ void ds3231_mbed_deinit(void)
 //-----------------------------------------------------------------------------
 bool ds3231_write(uint16_t addr, const uint8_t* buf, size_t buf_size)
 {
-    int ret = _i2c->write((int)addr, (char*)buf, buf_size);
-    if (ret != 0)
-    {
-        return false;
-    }
-    return true;
+    return _i2c->write((int)addr, (char*)buf, buf_size);
 }
 
 //-----------------------------------------------------------------------------
 bool ds3231_read(uint16_t addr, uint8_t* buf, size_t buf_size)
 {
-    int ret = _i2c->read(addr, (char*)buf, buf_size);
-    if (ret != 0)
-    {
-        return false;
-    }
-    return true;
+    return _i2c->read(addr, (char*)buf, buf_size);
 }
 //-----------------------------------------------------------------------------
 
