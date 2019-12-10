@@ -1,5 +1,5 @@
 #define TEST_APP
-#undef TEST_APP
+//#undef TEST_APP
 
 
 #ifdef TEST_APP
@@ -40,6 +40,50 @@ int main()
 static void test_app()
 {
     DigitalOut led(LED1);
+
+    // TM1637
+    #define LED_DIO PA_0
+    #define LED_CLK PA_5
+    tm1637_mbed disp_mbed =
+    {
+        DigitalInOut(LED_DIO),
+        DigitalOut(LED_CLK)
+    };
+    tm1637 disp;
+    const char str[]  = {"HI.L"};
+    const uint8_t raw[]  = {0x31, 0x32, 0x33, 0x34};
+    tm1637_mbed_init(&disp, &disp_mbed);
+    tm1637_clear(&disp);
+    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
+    wait_us(1000*2000);
+    tm1637_print(&disp, raw, sizeof(raw));
+    wait_us(1000*2000);
+    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
+    tm1637_set_brightness(&disp, TM1637_BRT0);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT1);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT2);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT3);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT4);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT5);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT6);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT7);
+    wait_us(1000*500);
+    tm1637_set_brightness(&disp, TM1637_BRT3);
+    tm1637_clear(&disp);
+    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
+    wait_us(1000*1000);
+    tm1637_clear(&disp);
+
+
+
+
     // AT24CXX
     #define AT24CXX_I2C_ADDR 0x07 // A0=1, A1=1, A2=1
     #define AT24CXX_SDA PB_7
@@ -96,51 +140,50 @@ static void test_app()
     #define DS3231_I2C_ADDR 0x68
     #define DS3231_SDA PB_7
     #define DS3231_SCL PB_6
+    struct SystemTime
+    {
+        uint16_t year;
+        uint8_t month;
+        uint8_t date;
+        uint8_t day;
+        uint8_t hours;
+        uint8_t minutes;
+        uint8_t seconds;
+    };
     //I2C i2c(DS3231_SDA, DS3231_SCL); @note common i2c with AT24CXX
     ds3231_mbed_init(&i2c, DS3231_I2C_ADDR);
+    SystemTime systime;
+    ds3231_time_t time;
+    ds3231_calendar_t cal;
 
-
-
-
-    // TM1637
-    #define LED_DIO PA_0
-    #define LED_CLK PA_5
-    tm1637_mbed disp_mbed =
+    if (ds3231_get_time(&time) != 0)
     {
-        DigitalInOut(LED_DIO),
-        DigitalOut(LED_CLK)
-    };
-    tm1637 disp;
-    const char str[]  = {"HI.L"};
-    const uint8_t raw[]  = {0x31, 0x32, 0x33, 0x34};
-    tm1637_mbed_init(&disp, &disp_mbed);
+        debug("ds3231_get_time error occured!\r\n");
+    }
+    if (ds3231_get_calendar(&cal) != 0)
+    {
+        debug("ds3231_get_calendar error occured!\r\n");
+    }
+    systime.seconds   = time.seconds;
+    systime.minutes   = time.minutes;
+    systime.hours     = time.hours;
+    systime.day       = cal.day;
+    systime.date      = cal.date;
+    systime.month     = cal.month;
+    systime.year      = cal.year;
+
+    const uint8_t time_buf_size = 5;
+    uint8_t time_buf[time_buf_size];
+
+    time_buf[0] = systime.hours / 10;
+    time_buf[1] = systime.hours % 10;
+    time_buf[2] = '.';
+    time_buf[3] = systime.minutes / 10;
+    time_buf[4] = systime.minutes % 10;
+
     tm1637_clear(&disp);
-    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
-    wait_us(1000*2000);
-    tm1637_print(&disp, raw, sizeof(raw));
-    wait_us(1000*2000);
-    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
-    tm1637_set_brightness(&disp, TM1637_BRT0);
-    wait_us(1000*500);
-    tm1637_set_brightness(&disp, TM1637_BRT1);
-    wait_us(1000*500);
-    tm1637_set_brightness(&disp, TM1637_BRT2);
-    wait_us(1000*500);
     tm1637_set_brightness(&disp, TM1637_BRT3);
-    wait_us(1000*500);
-    tm1637_set_brightness(&disp, TM1637_BRT4);
-    wait_us(1000*500);
-    tm1637_set_brightness(&disp, TM1637_BRT5);
-    wait_us(1000*500);
-    tm1637_set_brightness(&disp, TM1637_BRT6);
-    wait_us(1000*500);
-    tm1637_set_brightness(&disp, TM1637_BRT7);
-    wait_us(1000*500);
-    tm1637_set_brightness(&disp, TM1637_BRT3);
-    tm1637_clear(&disp);
-    tm1637_print(&disp, (const uint8_t*)str, sizeof(str));
-    wait_us(1000*1000);
-    tm1637_clear(&disp);
+    tm1637_print(&disp, (const uint8_t*)time_buf, time_buf_size);
 
 
 
