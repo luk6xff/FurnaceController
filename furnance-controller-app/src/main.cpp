@@ -1,5 +1,5 @@
 #define TEST_APP
-//#undef TEST_APP
+#undef TEST_APP
 
 
 #ifdef TEST_APP

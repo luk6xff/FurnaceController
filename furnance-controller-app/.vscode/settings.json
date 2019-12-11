@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "at24cxx.h": "c",
-        "ds1820.h": "c"
+        "ds1820.h": "c",
+        "cstddef": "cpp"
     }
 }

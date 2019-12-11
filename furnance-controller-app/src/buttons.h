@@ -16,8 +16,8 @@ public:
     typedef enum
     {
         BtnOk= 0,
-        BtnLeft,
-        BtnRight,
+        BtnDown,
+        BtnUp,
         BtnOther,
     } ButtonType;
 

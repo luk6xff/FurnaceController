@@ -100,10 +100,10 @@ int App::main_app()
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (info.state[Buttons::ButtonType::BtnLeft] == Buttons::ButtonState::BtnPressed ||
-                 info.state[Buttons::ButtonType::BtnRight] == Buttons::ButtonState::BtnPressed)
+        else if (info.state[Buttons::ButtonType::BtnDown] == Buttons::ButtonState::BtnPressed ||
+                 info.state[Buttons::ButtonType::BtnUp] == Buttons::ButtonState::BtnPressed)
         {
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnLeft/BtnRight pressed\r\n");
+            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown/BtnUp pressed\r\n");
         }
         check_temp_ctrl();
         check_time();
@@ -120,23 +120,42 @@ int App::main_app()
 int App::settings_menu()
 {
     debug("APP: --- Hello from SETTINGS ---\r\n");
+    enum SettingsType
+    {
+        TEMPERATURE,
+        TIME,
+        LAST
+    };
+    const char* menu[LAST] = {"TEMP", "CZAS"};
+    SettingsType current_settings = TEMPERATURE;
+    uint8_t curr_set = (int)current_settings;
     while(1)
     {
         Buttons::BtnInfo info = btns.check_buttons();
+        disp.print(menu[current_settings], 4);
+
         if (info.state[Buttons::ButtonType::BtnOk] == Buttons::ButtonState::BtnPressed)
         {
+            if ((SettingsType)curr_set == TEMPERATURE)
+            {
+                AppSettings::instance().set_temperatures(btns, disp);
+            }
+            else if ((SettingsType)curr_set == TIME)
+            {
+                AppSettings::instance().set_date_time(btns, disp);
+            }
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (info.state[Buttons::ButtonType::BtnLeft] == Buttons::ButtonState::BtnPressed)
+        else if (info.state[Buttons::ButtonType::BtnDown] == Buttons::ButtonState::BtnPressed)
         {
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnLeft pressed\r\n");
-            return 2;
+            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown pressed\r\n");
+            curr_set++ % (int)LAST;
         }
-        else if (info.state[Buttons::ButtonType::BtnRight] == Buttons::ButtonState::BtnPressed)
+        else if (info.state[Buttons::ButtonType::BtnUp] == Buttons::ButtonState::BtnPressed)
         {
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnRight pressed\r\n");
-            return 3;
+            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnUp pressed\r\n");
+            curr_set-- % (int)LAST;
         }
     }
     return 0;
@@ -198,7 +217,6 @@ void App::check_temp_ctrl()
                 break;
         }
         update_temp_ctrl = false;
-        wait(1);
     }
 }
 

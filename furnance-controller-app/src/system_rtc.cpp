@@ -187,3 +187,64 @@ const char *SystemRtc::get_month_string(const SystemTime& time)
 }
 
 //------------------------------------------------------------------------------
+uint8_t SystemRtc::calculate_day_of_week(uint8_t d, uint8_t m, int y)
+{
+  int dow;
+  uint8_t array[12] = {6, 2, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+  dow = (y % 100);
+  dow = dow*1.25;
+  dow += d;
+  dow += array[m-1];
+  if (((y % 4)==0) && (m<3))
+  {
+    dow -= 1;
+  }
+  while (dow>7)
+  {
+    dow -= 7;
+  }
+
+  return dow;
+}
+
+//------------------------------------------------------------------------------
+uint8_t SystemRtc::validate_date(uint8_t d, uint8_t m, uint16_t y)
+{
+  uint8_t array[12] = {31,0,31,30,31,30,31,31,30,31,30,31};
+  uint8_t od;
+
+  if (m==2)
+  {
+    if ((y % 4)==0)
+    {
+      if (d==30)
+        od=1;
+      else if (d==0)
+        od=29;
+      else
+        od=d;
+    }
+    else
+    {
+      if (d==29)
+        od=1;
+      else if (d==0)
+        od=28;
+      else
+        od=d;
+    }
+  }
+  else
+  {
+    if (d==0)
+      od=array[m-1];
+    else if (d==(array[m-1]+1))
+      od=1;
+    else
+      od=d;
+  }
+
+  return od;
+}
+
+//------------------------------------------------------------------------------

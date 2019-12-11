@@ -5,7 +5,9 @@
 
 // Include all the modules containing non volatile settings
 #include "temp_controller.h"
-
+#include "system_rtc.h"
+#include "display.h"
+#include "buttons.h"
 
 class AppSettings
 {
@@ -27,9 +29,13 @@ public:
     const Settings& get_defaults();
     const Settings& get_current();
 
+    // Settings options
+    bool set_date_time(Buttons& btns, Display& disp);
+    bool set_temperatures(Buttons& btns, Display& disp);
+
+private:
     bool save_settings(const Settings &settings);
     bool read_rettings();
-    void set_defaults();
 
 private:
     AppSettings();

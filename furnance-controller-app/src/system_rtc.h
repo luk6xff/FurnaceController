@@ -28,6 +28,8 @@ public:
     static char* time_date_string(const SystemTime& time);
     static const char* get_day_of_week_string(const SystemTime& time);
     static const char* get_month_string(const SystemTime& time);
+    static uint8_t calculate_day_of_week(uint8_t d, uint8_t m, int y);
+    static uint8_t validate_date(uint8_t d, uint8_t m, uint16_t y);
 
 private:
     explicit SystemRtc();

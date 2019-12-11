@@ -19,8 +19,8 @@ Buttons::BtnInfo Buttons::check_buttons()
 {
     BtnInfo info;
     info.state[BtnOk] = btn_ok.read() == 0 ? BtnPressed : BtnNotPressed;
-    info.state[BtnLeft] = btn_left.read() == 0 ? BtnPressed : BtnNotPressed;
-    info.state[BtnRight] = btn_right.read() == 0 ? BtnPressed : BtnNotPressed;
+    info.state[BtnDown] = btn_left.read() == 0 ? BtnPressed : BtnNotPressed;
+    info.state[BtnUp] = btn_right.read() == 0 ? BtnPressed : BtnNotPressed;
     return info;
 }
 

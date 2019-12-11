@@ -1,6 +1,10 @@
 #include "app_settings.h"
 #include "hw_config.h"
 
+#include "display.h"
+#include "system_rtc.h"
+#include "temp_controller.h"
+
 #define DEBUG_ON 1
 
 //------------------------------------------------------------------------------
@@ -20,7 +24,7 @@ AppSettings::AppSettings()
     default_settings =
     {
         .magic = 0x4C554B36,  // LUK6
-        .version = 0x00000002,
+        .version = 0x00000001,
         .temp =
         {
             .temp_min = -20,
@@ -101,6 +105,79 @@ bool AppSettings::read_rettings()
     {
         return false;
     }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+bool AppSettings::set_date_time(Buttons& btns, Display& disp)
+{
+    SystemTime time;
+    bool is_time_set = false;
+    uint8_t h_or_m = 0;
+    if (SystemRtc::instance().get_time(time) > 0)
+    {
+        time.year = 2020;
+        time.month = 1;
+        time.day = 1;
+        time.hours = 0;
+        time.minutes = 0;
+        time.seconds = 0;
+    }
+    disp.print_time(time.hours, time.minutes, true);
+    while (!is_time_set)
+    {
+        Buttons::BtnInfo inf = btns.check_buttons();
+        if (h_or_m == 0) // minutes
+        {
+            if (inf.state[Buttons::ButtonType::BtnUp]  == Buttons::ButtonState::BtnPressed)
+            {
+                time.minutes++ % 60;
+                disp.print_time(time.hours, time.minutes, true);
+            }
+            else if (inf.state[Buttons::ButtonType::BtnDown]  == Buttons::ButtonState::BtnPressed)
+            {
+                time.minutes-- % 60;
+                disp.print_time(time.hours, time.minutes, true);
+            }
+            else if (inf.state[Buttons::ButtonType::BtnOk]  == Buttons::ButtonState::BtnPressed)
+            {
+                h_or_m = 1; // hours
+            }
+        }
+        else if (h_or_m == 1)
+        {
+            if (inf.state[Buttons::ButtonType::BtnUp]  == Buttons::ButtonState::BtnPressed)
+            {
+                time.hours++ % 24;
+                disp.print_time(time.hours, time.minutes, true);
+            }
+            else if (inf.state[Buttons::ButtonType::BtnDown]  == Buttons::ButtonState::BtnPressed)
+            {
+                time.hours-- % 24;
+                disp.print_time(time.hours, time.minutes, true);
+            }
+            else if (inf.state[Buttons::ButtonType::BtnOk]  == Buttons::ButtonState::BtnPressed)
+            {
+                h_or_m = 1; // hours
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
+{
+    SystemTime time;
+    if (SystemRtc::instance().get_time(time) > 0)
+    {
+        time.year = 2020;
+        time.month = 1;
+        time.day = 1;
+        time.hours = 0;
+        time.minutes = 0;
+        time.seconds = 0;
+    }
+
     return true;
 }
 
