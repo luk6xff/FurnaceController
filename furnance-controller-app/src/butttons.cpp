@@ -4,6 +4,14 @@
 
 
 //------------------------------------------------------------------------------
+Button::Button(PinName pin_name)
+    : pin(pin_name)
+{
+    pin.rise(mbed::callback(this, &Button::raise_irq));
+}
+
+
+//------------------------------------------------------------------------------
 Buttons::Buttons()
     : btn_ok(BTN_OK)
     , btn_left(BTN_LEFT)

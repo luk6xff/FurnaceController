@@ -4,6 +4,35 @@
 #include "mbed.h"
 #include <vector>
 
+
+typedef enum
+{
+    BtnNotPressed = 0,
+    BtnPressed,
+    BtnHold,
+    BtnInvalid,
+} ButtonState;
+
+
+
+class Button
+{
+
+public:
+    explicit Button(PinName pin_name);
+
+    ButtonState get_state();
+
+private:
+    void raise_irq();
+    void fall_irq();
+
+private:
+    InterruptIn pin;
+    ButtonState last_state;
+};
+
+
 class Buttons
 {
 
@@ -21,13 +50,7 @@ public:
         BtnOther,
     } ButtonType;
 
-    typedef enum
-    {
-        BtnNotPressed = 0,
-        BtnPressed,
-        BtnHold,
-        BtnInvalid,
-    } ButtonState;
+
 
     typedef struct
     {

@@ -129,34 +129,34 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
         Buttons::BtnInfo inf = btns.check_buttons();
         if (h_or_m == 0) // minutes
         {
-            if (inf.state[Buttons::ButtonType::BtnUp]  == Buttons::ButtonState::BtnPressed)
+            if (inf.state[Buttons::ButtonType::BtnUp]  == ButtonState::BtnPressed)
             {
                 time.minutes++ % 60;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnDown]  == Buttons::ButtonState::BtnPressed)
+            else if (inf.state[Buttons::ButtonType::BtnDown]  == ButtonState::BtnPressed)
             {
                 time.minutes-- % 60;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnOk]  == Buttons::ButtonState::BtnPressed)
+            else if (inf.state[Buttons::ButtonType::BtnOk]  == ButtonState::BtnPressed)
             {
                 h_or_m = 1; // hours
             }
         }
         else if (h_or_m == 1)
         {
-            if (inf.state[Buttons::ButtonType::BtnUp]  == Buttons::ButtonState::BtnPressed)
+            if (inf.state[Buttons::ButtonType::BtnUp]  == ButtonState::BtnPressed)
             {
                 time.hours++ % 24;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnDown]  == Buttons::ButtonState::BtnPressed)
+            else if (inf.state[Buttons::ButtonType::BtnDown]  == ButtonState::BtnPressed)
             {
                 time.hours-- % 24;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnOk]  == Buttons::ButtonState::BtnPressed)
+            else if (inf.state[Buttons::ButtonType::BtnOk]  == ButtonState::BtnPressed)
             {
                 h_or_m = 1; // hours
             }

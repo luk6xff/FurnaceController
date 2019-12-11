@@ -95,13 +95,13 @@ int App::main_app()
     while(1)
     {
         Buttons::BtnInfo info = btns.check_buttons();
-        if (info.state[Buttons::ButtonType::BtnOk] == Buttons::ButtonState::BtnPressed)
+        if (info.state[Buttons::ButtonType::BtnOk] == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (info.state[Buttons::ButtonType::BtnDown] == Buttons::ButtonState::BtnPressed ||
-                 info.state[Buttons::ButtonType::BtnUp] == Buttons::ButtonState::BtnPressed)
+        else if (info.state[Buttons::ButtonType::BtnDown] == ButtonState::BtnPressed ||
+                 info.state[Buttons::ButtonType::BtnUp] == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown/BtnUp pressed\r\n");
         }
@@ -134,7 +134,7 @@ int App::settings_menu()
         Buttons::BtnInfo info = btns.check_buttons();
         disp.print(menu[current_settings], 4);
 
-        if (info.state[Buttons::ButtonType::BtnOk] == Buttons::ButtonState::BtnPressed)
+        if (info.state[Buttons::ButtonType::BtnOk] == ButtonState::BtnPressed)
         {
             if ((SettingsType)curr_set == TEMPERATURE)
             {
@@ -147,12 +147,12 @@ int App::settings_menu()
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (info.state[Buttons::ButtonType::BtnDown] == Buttons::ButtonState::BtnPressed)
+        else if (info.state[Buttons::ButtonType::BtnDown] == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown pressed\r\n");
             curr_set++ % (int)LAST;
         }
-        else if (info.state[Buttons::ButtonType::BtnUp] == Buttons::ButtonState::BtnPressed)
+        else if (info.state[Buttons::ButtonType::BtnUp] == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnUp pressed\r\n");
             curr_set-- % (int)LAST;
