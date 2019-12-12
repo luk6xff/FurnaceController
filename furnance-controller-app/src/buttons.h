@@ -9,7 +9,9 @@ typedef enum
 {
     BtnNotPressed = 0,
     BtnPressed,
-    BtnHold,
+    BtnHold_50ms,
+    BtnHold_1s,
+    BtnHold_5s,
     BtnInvalid,
 } ButtonState;
 
@@ -21,7 +23,7 @@ class Button
 public:
     explicit Button(PinName pin_name);
 
-    ButtonState get_state();
+    ButtonState get_state() const;
 
 private:
     void raise_irq();
