@@ -15,7 +15,6 @@ Button::Button(PinName pin_name)
     input_button.fall(mbed::callback(this, &Button::fall_isr));
 
     ticker.attach_us(mbed::callback(this, &Button::sample_isr), SAMPLING_PERIOD_MS*1000);
-    //ticker.attach(mbed::callback(this, &Button::sample_isr), 0.05);
 }
 
 //------------------------------------------------------------------------------

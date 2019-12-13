@@ -1,7 +1,7 @@
 #include "temp_controller.h"
 #include "hw_config.h"
 
-#define DEBUG_ON 1
+#define DEBUG_ON 0
 
 //------------------------------------------------------------------------------
 TempController::TempController(const TempCtrlSettings& temp_thresh)

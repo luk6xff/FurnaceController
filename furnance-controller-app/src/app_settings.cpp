@@ -5,7 +5,7 @@
 #include "system_rtc.h"
 #include "temp_controller.h"
 
-#define DEBUG_ON 1
+#define DEBUG_ON 0
 
 
 //------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 #include "app.h"
 #include "mbed.h"
 
-#define DEBUG_ON 1
+#define DEBUG_ON 0
 
 //------------------------------------------------------------------------------
 App &App::instance()
