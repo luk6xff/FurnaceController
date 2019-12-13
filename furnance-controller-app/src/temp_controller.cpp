@@ -21,8 +21,8 @@ TempController::TempController(const TempCtrlSettings& temp_thresh)
         ds1820_sensors_found++;
     }
 
-    // RELAY - always start from disabled
-    relay_pin = 0;
+    // RELAY_OFF- always start from disabled state
+    relay_pin = 1;
 }
 
 //------------------------------------------------------------------------------
@@ -105,12 +105,12 @@ void TempController::enable_relay(TempCtrlRelayStatus state)
     if (state == TEMP_CTRL_RELAY_OFF)
     {
         debug_if(DEBUG_ON, "TEMP_CONTROLLER: RELAY OFF\r\n");
-        relay_pin = 0;
+        relay_pin = 1;
     }
     else // TEMP_CTRL_RELAY_ON
     {
         debug_if(DEBUG_ON, "TEMP_CONTROLLER: RELAY ON\r\n");
-        relay_pin = 1;
+        relay_pin = 0;
     }
 
     relay_status = state;
