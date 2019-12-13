@@ -22,7 +22,7 @@ ButtonState Buttons::check_button(ButtonType type)
     {
         return BtnStateInvalid;
     }
-    return it->second->get_state();
+    return it->second->get_last_state();
 }
 
 //------------------------------------------------------------------------------

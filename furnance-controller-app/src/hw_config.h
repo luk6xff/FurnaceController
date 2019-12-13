@@ -25,7 +25,7 @@
 // BUTTONS
 #define BTN_OK    PE_12
 #define BTN_DOWN  PE_14
-#define BTN_UP PA_15
+#define BTN_UP PE_15
 
 
 #elif BOARD_MBED_DISCO_L476VG
@@ -47,7 +47,7 @@
 // BUTTONS
 #define BTN_OK    PE_13
 #define BTN_DOWN  PE_14
-#define BTN_UP    PA_15
+#define BTN_UP    PE_15
 // RELAY
 #define RELAY_PIN PE_11
 

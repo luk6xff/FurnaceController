@@ -1,11 +1,13 @@
 #include "buttons.h"
 #include "hw_config.h"
 
+#define DEBUG_ON 1
 
 //------------------------------------------------------------------------------
 Button::Button(PinName pin_name)
     : input_button(pin_name)
-    , last_state(BtnNotPressed)
+    , current_state(BtnNotPressed)
+    , last_valid_state(BtnNotPressed)
     , sampling_counter(0)
 {
     input_button.mode(PullUp);
@@ -13,81 +15,106 @@ Button::Button(PinName pin_name)
     input_button.fall(mbed::callback(this, &Button::fall_isr));
 
     ticker.attach_us(mbed::callback(this, &Button::sample_isr), SAMPLING_PERIOD_MS*1000);
+    //ticker.attach(mbed::callback(this, &Button::sample_isr), 0.05);
 }
 
 //------------------------------------------------------------------------------
-ButtonState Button::get_state() const
+ButtonState Button::get_last_state()
 {
-    return state;
+    ButtonState tmp = last_valid_state;
+    last_valid_state = current_state;
+    return tmp;
 }
 
 //------------------------------------------------------------------------------
 void Button::raise_isr()
 {
-    if (last_state == BtnNotPressed)
+    if (current_state != BtnFirstPressed)
     {
-        last_state = BtnFirstPressed;
-        sampling_counter = 0;
+        reset_state();
+        debug_if(DEBUG_ON, "BUTTON: STATE == raise_isr \r\n");
     }
 }
 
 //------------------------------------------------------------------------------
 void Button::fall_isr()
 {
-    if (last_state != BtnFirstPressed)
+    // First press, button to GND
+    if (current_state == BtnNotPressed)
     {
-        last_state = BtnNotPressed;
+        reset_state();
+        current_state = BtnFirstPressed;
+        debug_if(DEBUG_ON, "BUTTON: STATE == fall_isr \r\n");
     }
 }
 
 //------------------------------------------------------------------------------
 void Button::sample_isr()
 {
-    switch (last_state)
+    switch (current_state)
     {
         case BtnFirstPressed:
         {
-            if (sampling_counter++ >= BtnHold_50ms)
+            sampling_counter++;
+            if (sampling_counter == BtnPressed)
             {
-                last_state = BtnHold_50ms;
+                // Is button still hold ?
+                if (input_button == 0)
+                {
+                    debug_if(DEBUG_ON, "BUTTON: STATE CHANGE: last_valid_state = BtnPressed>>>\r\n");
+                    last_valid_state = BtnPressed;
+                    current_state = BtnHoldSteady;
+                }
+                else
+                {
+                    debug_if(DEBUG_ON, "BUTTON: <<<RESETTED !!!>>>\r\n");
+                    reset_state();
+                }
             }
             break;
         }
 
-        case BtnHold_50ms:
+        case BtnHoldSteady:
         {
-            if (input_button)
+            sampling_counter++;
+            // Is button still hold ?
+            if (input_button == 0)
             {
-                if (sampling_counter++ >= BtnHold_1s)
+                if (sampling_counter == BtnHold_1s)
                 {
-                    last_state = BtnHold_1s;
+                    last_valid_state = BtnHold_1s;
+                    debug_if(DEBUG_ON, "BUTTON: STATE CHANGE: last_valid_state = BtnHold_1s>>>\r\n");
+                }
+                else if (sampling_counter == BtnHold_5s)
+                {
+                    last_valid_state = BtnHold_5s;
+                    debug_if(DEBUG_ON, "BUTTON: STATE CHANGE: last_valid_state = BtnHold_5s>>>\r\n");
+                }
+                else if (sampling_counter == BtnHold_20s)
+                {
+                    last_valid_state = BtnHold_20s;
+                    debug_if(DEBUG_ON, "BUTTON: STATE CHANGE: last_valid_state = BtnHold_20s>>>\r\n");
                 }
             }
             else
             {
-                last_state = BtnNotPressed;
+                reset_state();
             }
             break;
         }
 
-        case BtnHold_1s:
-        {
-            if (input_button)
-            {
-                if (sampling_counter++ >= BtnHold_5s)
-                {
-                    last_state = BtnHold_5s;
-                }
-            }
-            else
-            {
-                last_state = BtnNotPressed;
-            }
-            break;
-        }
         default:
             break;
     }
+}
+
+//------------------------------------------------------------------------------
+void Button::reset_state()
+{
+    debug_if(DEBUG_ON, "BUTTON: <<<RESET>>>>>>>>>>> !!!>>>\r\n");
+    current_state = BtnNotPressed;
+    last_valid_state = BtnNotPressed;
+    sampling_counter = 0;
 }
 
 //------------------------------------------------------------------------------

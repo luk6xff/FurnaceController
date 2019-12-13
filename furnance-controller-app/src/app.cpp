@@ -94,18 +94,22 @@ int App::main_app()
 
     while(1)
     {
-        if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
+        const ButtonState ok_state = btns.check_button(BtnTypeOk);
+        const ButtonState up_state = btns.check_button(BtnTypeUp);
+        const ButtonState down_state = btns.check_button(BtnTypeDown);
+        if (ok_state == ButtonState::BtnHold_1s)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed ||
-                 btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
+        else if (up_state == ButtonState::BtnPressed || down_state == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown/BtnUp pressed\r\n");
+            check_time(true);
         }
         check_temp_ctrl();
-        check_time();
+        // Do not disply time when relay is on
+        check_time(tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_OFF);
 
         if (get_error() != APP_ERROR_NO_ERROR)
         {
@@ -130,11 +134,15 @@ int App::settings_menu()
     int curr_set = (int)current_settings;
     while(1)
     {
+        const ButtonState ok_state = btns.check_button(BtnTypeOk);
+        const ButtonState up_state = btns.check_button(BtnTypeUp);
+        const ButtonState down_state = btns.check_button(BtnTypeDown);
         current_settings = (SettingsType)curr_set;
         disp.print(menu[curr_set], 4);
 
-        if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
+        if (ok_state == ButtonState::BtnPressed)
         {
+            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             if (current_settings == TEMPERATURE)
             {
                 AppSettings::instance().set_temperatures(btns, disp);
@@ -143,10 +151,9 @@ int App::settings_menu()
             {
                 AppSettings::instance().set_date_time(btns, disp);
             }
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed)
+        else if (down_state == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown pressed\r\n");
             curr_set--;
@@ -155,7 +162,7 @@ int App::settings_menu()
                 curr_set = (int)LAST - 1;
             };
         }
-        else if (btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
+        else if (up_state == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnUp pressed\r\n");
             curr_set = (curr_set+1) % (int)LAST;
@@ -224,22 +231,26 @@ void App::check_temp_ctrl()
 }
 
 //------------------------------------------------------------------------------
-void App::check_time()
+void App::check_time(bool show)
 {
     if (update_time)
     {
-        static bool blink_on = false;
-        SystemTime current_time;
-        int ret = SystemRtc::instance().get_time(current_time);
-        if (ret > 0)
+        if (show)
         {
-            debug_if(DEBUG_ON, "APP: update_time - get_time error occured! ERR:%d\r\n", ret);
-        }
-        else
-        {
-            debug_if(DEBUG_ON, "APP: Current time: %s\r\n", SystemRtc::time_date_string(current_time));
-            blink_on = blink_on^1;
-            disp.print_time(current_time.hours, current_time.minutes, blink_on);
+            static bool blink_on = false;
+            SystemTime current_time;
+            int ret = SystemRtc::instance().get_time(current_time);
+            if (ret > 0)
+            {
+                debug_if(DEBUG_ON, "APP: update_time - get_time error occured! ERR:%d\r\n", ret);
+            }
+            else
+            {
+                // Do not disply time when relay is on
+                debug_if(DEBUG_ON, "APP: Current time: %s\r\n", SystemRtc::time_date_string(current_time));
+                blink_on = blink_on^1;
+                disp.print_time(current_time.hours, current_time.minutes, blink_on);
+            }
         }
         update_time = false;
     }

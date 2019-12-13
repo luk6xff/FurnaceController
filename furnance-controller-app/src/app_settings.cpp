@@ -30,7 +30,7 @@ AppSettings::AppSettings()
             .temp_min = -20,
             .temp_max = 120,
             .temp_relay_on = 30,
-            .temp_hysteresis = 28,
+            .temp_relay_off = 28,
         },
     };
 }
@@ -116,24 +116,28 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
     uint8_t h_or_m = 0;
     if (SystemRtc::instance().get_time(time) > 0)
     {
-        time.year = 2020;
-        time.month = 1;
-        time.day = 1;
+        // time.year = 2020;
+        // time.month = 1;
+        // time.day = 1;
+        // time.seconds = 0;  NOT USED
         time.hours = 0;
         time.minutes = 0;
-        time.seconds = 0;
+
     }
     disp.print_time(time.hours, time.minutes, true);
-    while (!is_time_set)
+    while (1)
     {
+        const ButtonState ok_state = btns.check_button(BtnTypeOk);
+        const ButtonState up_state = btns.check_button(BtnTypeUp);
+        const ButtonState down_state = btns.check_button(BtnTypeDown);
         if (h_or_m == 0) // minutes
         {
-            if (btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
+            if (up_state == ButtonState::BtnPressed)
             {
                 time.minutes = (time.minutes+1) % 60;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed)
+            else if (down_state == ButtonState::BtnPressed)
             {
                 if (time.minutes == 0)
                 {
@@ -146,19 +150,19 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
 
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
+            else if (ok_state == ButtonState::BtnPressed)
             {
                 h_or_m = 1; // hours
             }
         }
         else if (h_or_m == 1)
         {
-            if (btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
+            if (up_state == ButtonState::BtnPressed)
             {
-                time.hours++ % 24;
+                time.hours = (time.hours+1) % 24;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed)
+            else if (down_state == ButtonState::BtnPressed)
             {
                 if (time.hours == 0)
                 {
@@ -170,28 +174,176 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
                 }
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
+            else if (ok_state == ButtonState::BtnPressed)
             {
                 h_or_m = 1; // hours
             }
         }
+
+        if (ok_state == ButtonState::BtnHold_5s)
+        {
+            is_time_set = true;
+            break;
+        }
+        else if (ok_state == ButtonState::BtnHold_1s)
+        {
+            // Nothing
+        }
     }
+
+    disp.clear();
+    if (is_time_set)
+    {
+        if (!SystemRtc::instance().set_time(time))
+        {
+            debug_if(DEBUG_ON, "APP_SETTINGS: New time: %d:%d saved correctly! \r\n", time.hours, time.minutes);
+            disp.print("oooo", 4);
+        }
+        else
+        {
+            debug_if(DEBUG_ON, "APP_SETTINGS: New time: %d:%d has not been saved! \r\n", time.hours, time.minutes);
+            disp.print("nnnn", 4);
+            return false;
+        }
+
+    }
+    wait_us(1000000);
+    return true;
 }
 
 //------------------------------------------------------------------------------
 bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
 {
-    SystemTime time;
-    if (SystemRtc::instance().get_time(time) > 0)
+    TempController::TempCtrlSettings temps = get_current().temp;
+    bool is_temp_set = false;
+    enum SettingsType
     {
-        time.year = 2020;
-        time.month = 1;
-        time.day = 1;
-        time.hours = 0;
-        time.minutes = 0;
-        time.seconds = 0;
+        FIRST = -1,
+        TEMP_RELAY_ON = 0,
+        TEMP_RELAY_OFF,
+        LAST,
+    };
+    const char* menu[LAST] = {"T_ON", "TOFF"};
+    SettingsType curr_set = TEMP_RELAY_ON;
+
+    while (1)
+    {
+        ButtonState ok_state = btns.check_button(BtnTypeOk);
+        ButtonState up_state = btns.check_button(BtnTypeUp);
+        ButtonState down_state = btns.check_button(BtnTypeDown);
+        disp.print(menu[curr_set], 4);
+
+        if (ok_state == ButtonState::BtnPressed)
+        {
+            if (curr_set == TEMP_RELAY_ON)
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_RELAY_ON: %d chosen! \r\n", temps.temp_relay_on);
+                disp.print_temperature(temps.temp_relay_on);
+                while (1)
+                {
+                    ok_state = btns.check_button(BtnTypeOk);
+                    up_state = btns.check_button(BtnTypeUp);
+                    down_state = btns.check_button(BtnTypeDown);
+                    if (up_state == ButtonState::BtnPressed)
+                    {
+                        temps.temp_relay_on++;
+                        if (temps.temp_relay_on > temps.temp_max)
+                        {
+                            temps.temp_relay_on = temps.temp_min;
+                        }
+                        disp.print_temperature(temps.temp_relay_on);
+                    }
+                    else if (down_state == ButtonState::BtnPressed)
+                    {
+                        temps.temp_relay_on--;
+                        if (temps.temp_relay_on < temps.temp_min)
+                        {
+                            temps.temp_relay_on = temps.temp_max;
+                        }
+                        disp.print_temperature(temps.temp_relay_on);
+                    }
+                    if (ok_state == ButtonState::BtnHold_1s)
+                    {
+                        is_temp_set = true;
+                        break;
+                    }
+                }
+            }
+            else if (curr_set == TEMP_RELAY_OFF)
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_RELAY_OFF: %d chosen! \r\n", temps.temp_relay_off);
+                disp.print_temperature(temps.temp_relay_off);
+                while (1)
+                {
+                    ok_state = btns.check_button(BtnTypeOk);
+                    up_state = btns.check_button(BtnTypeUp);
+                    down_state = btns.check_button(BtnTypeDown);
+                    if (up_state == ButtonState::BtnPressed)
+                    {
+                        temps.temp_relay_off++;
+                        if (temps.temp_relay_off > temps.temp_relay_on)
+                        {
+                            temps.temp_relay_off = temps.temp_min;
+                        }
+                        disp.print_temperature(temps.temp_relay_off);
+                    }
+                    else if (down_state == ButtonState::BtnPressed)
+                    {
+                        temps.temp_relay_off--;
+                        if (temps.temp_relay_off < temps.temp_min)
+                        {
+                            temps.temp_relay_off = temps.temp_relay_on;
+                        }
+                        disp.print_temperature(temps.temp_relay_off);
+                    }
+                    if (ok_state == ButtonState::BtnHold_1s)
+                    {
+                        is_temp_set = true;
+                        break;
+                    }
+                }
+            }
+            if (is_temp_set)
+            {
+                break;
+            }
+        }
+
+        else if (up_state == ButtonState::BtnPressed)
+        {
+            curr_set = (SettingsType)(((int)curr_set+1)%(int)LAST);
+        }
+
+        else if (down_state == ButtonState::BtnPressed)
+        {
+            if ((int)curr_set < 0)
+            {
+               curr_set = (SettingsType)((int)LAST-1);
+            }
+            curr_set = (SettingsType)((int)curr_set-1);
+
+        }
     }
 
+    disp.clear();
+    if (is_temp_set)
+    {
+        Settings current = get_current();
+        current.temp = temps;
+        if (!save_settings(current))
+        {
+            debug_if(DEBUG_ON, "APP_SETTINGS: Updating eeprom with new temperatures failed!\r\n");
+            current_settings = default_settings;
+            disp.print("nnnn", 4);
+
+        }
+        else
+        {
+            debug_if(DEBUG_ON, "APP_SETTINGS: Updating eeprom with new temperatures succeed!\r\n");
+            disp.print("oooo", 4);
+        }
+    }
+    wait_us(1000000);
     return true;
 }
 

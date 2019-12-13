@@ -41,7 +41,7 @@ private:
 
     // Others
     void check_temp_ctrl();
-    void check_time();
+    void check_time(bool show=false);
     void set_error(AppError err);
     AppError get_error() const;
 

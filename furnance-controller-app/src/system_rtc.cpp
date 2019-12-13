@@ -82,39 +82,43 @@ float SystemRtc::get_temperature()
 //------------------------------------------------------------------------------
 char* SystemRtc::time_string(const SystemTime& time)
 {
-	static char str[] = "xxxxxxxx";
-	if (time.hours < 10)
-    {
-		str[0] = '0';
-    }
-    else
-    {
-		str[0] = char((time.hours / 10) + '0');
-    }
-    str[1] = char((time.hours % 10) + '0');
-	str[2] = 58;
-	if (time.minutes < 10)
-    {
-		str[3] = '0';
-    }
-    else
-    {
-		str[3]=char((time.minutes/ 10) + '0');
-    }
-	str[4]=char((time.minutes % 10) + '0');
-	str[5]=58;
-    if (time.seconds<10)
-    {
-        str[6] = '0';
-    }
-    else
-    {
-        str[6]=char((time.seconds / 10) + '0');
-    }
-	str[7]=char((time.seconds % 10) + '0');
-	str[8]='\0';
+  static char str[] = "xxxxxxxx";
+  if (time.hours < 10)
+  {
+    str[0] = '0';
+  }
+  else
+  {
+    str[0] = char((time.hours / 10) + '0');
+  }
 
-	return (char*)&str;
+  str[1] = char((time.hours % 10) + '0');
+  str[2] = 58;
+
+  if (time.minutes < 10)
+  {
+    str[3] = '0';
+  }
+  else
+  {
+    str[3]=char((time.minutes/ 10) + '0');
+  }
+
+  str[4]=char((time.minutes % 10) + '0');
+  str[5]=58;
+
+  if (time.seconds<10)
+  {
+      str[6] = '0';
+  }
+  else
+  {
+      str[6]=char((time.seconds / 10) + '0');
+  }
+  str[7]=char((time.seconds % 10) + '0');
+  str[8]='\0';
+
+  return (char*)&str;
 }
 
 //------------------------------------------------------------------------------

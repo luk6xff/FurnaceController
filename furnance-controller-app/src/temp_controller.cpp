@@ -69,11 +69,17 @@ TempController::TempCtrlError TempController::process()
     {
         enable_relay(TEMP_CTRL_RELAY_ON);
     }
-    else if (last_temperature <= (temperatures.temp_hysteresis))
+    else if (last_temperature <= (temperatures.temp_relay_off))
     {
         enable_relay(TEMP_CTRL_RELAY_OFF);
     }
     return status;
+}
+
+//------------------------------------------------------------------------------
+TempController::TempCtrlRelayStatus TempController::get_relay_status() const
+{
+    return relay_status;
 }
 
 //------------------------------------------------------------------------------

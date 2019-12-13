@@ -9,12 +9,10 @@ class TempController
 public:
     typedef struct
     {
-
         int temp_min;
         int temp_max;
         int temp_relay_on;
-        int temp_hysteresis;
-
+        int temp_relay_off;
     } TempCtrlSettings;
 
 
@@ -37,6 +35,7 @@ public:
     explicit TempController(const TempCtrlSettings& temps);
     TempCtrlError get_temperature(float& temperature);
     float get_last_temperature() const;
+    TempCtrlRelayStatus get_relay_status() const;
 
     TempCtrlError process();
 
