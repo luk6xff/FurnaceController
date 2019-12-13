@@ -106,7 +106,6 @@ void TempController::enable_relay(TempCtrlRelayStatus state)
     {
         debug_if(DEBUG_ON, "TEMP_CONTROLLER: RELAY OFF\r\n");
         relay_pin = 0;
-        return;
     }
     else // TEMP_CTRL_RELAY_ON
     {
