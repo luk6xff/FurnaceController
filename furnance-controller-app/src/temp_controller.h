@@ -32,13 +32,12 @@ public:
 
 
 public:
-    explicit TempController(const TempCtrlSettings& temps);
+    explicit TempController(const TempCtrlSettings& temp_thresh);
     TempCtrlError get_temperature(float& temperature);
     float get_last_temperature() const;
     TempCtrlRelayStatus get_relay_status() const;
-
+    void update_temp_thresholds(const TempCtrlSettings& temp_thresh);
     TempCtrlError process();
-
 
 private:
     bool is_sensor_available();
@@ -48,7 +47,7 @@ private:
     //ds1820 temp_sensor;
     int ds1820_sensors_found;
     const int ds1820_sensors_num;
-    TempCtrlSettings temperatures;
+    TempCtrlSettings temp_thresholds;
 
     DigitalOut relay_pin;
     TempCtrlRelayStatus relay_status;

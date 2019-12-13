@@ -40,8 +40,9 @@ private:
     void ev_kick_watchdog();
 
     // Others
-    void check_temp_ctrl();
-    void check_time(bool show=false);
+    void check_temp_ctrl(bool show_temp=true);
+    void check_time(bool show_time=true);
+    void check_indoor_temperature();
     void set_error(AppError err);
     AppError get_error() const;
 
@@ -54,6 +55,7 @@ private:
 
     Watchdog& watchdog;
     Ticker watchdog_ticker;
+    Timer app_timer;
     // Event flags
     volatile bool update_temp_ctrl;
     volatile bool update_time;

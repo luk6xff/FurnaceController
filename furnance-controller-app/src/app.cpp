@@ -77,6 +77,8 @@ void App::init()
     // Configure Watchdog
     watchdog.start(WATCHDOG_TIMEOUT_MS);
     watchdog_ticker.attach(mbed::callback(this, &App::ev_kick_watchdog), 5); // every 5 seconds
+    // Start global timer
+    app_timer.start();
 
     // Configure EEPROM Settings
     AppSettings::instance().init();
@@ -85,7 +87,8 @@ void App::init()
 //------------------------------------------------------------------------------
 int App::main_app()
 {
-    debug_if(DEBUG_ON, "APP: --- Hello from MAIN_APP ---\r\n");
+    debug_if(DEBUG_ON, "APP: --- MAIN_APP ---\r\n");
+    const uint8_t other_settings_timeout_s = 4; //[s]
     Ticker update_temp_ticker;
     update_temp_ticker.attach(mbed::callback(this, &App::ev_update_temp_ctrl), 1); // every 1 second
 
@@ -97,18 +100,48 @@ int App::main_app()
         const ButtonState ok_state = btns.check_button(BtnTypeOk);
         const ButtonState up_state = btns.check_button(BtnTypeUp);
         const ButtonState down_state = btns.check_button(BtnTypeDown);
+
         if (ok_state == ButtonState::BtnHold_1s)
         {
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
+            debug_if(DEBUG_ON, "APP: ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (up_state == ButtonState::BtnPressed || down_state == ButtonState::BtnPressed)
+
+        else if (up_state == ButtonState::BtnPressed)
         {
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown/BtnUp pressed\r\n");
-            check_time(true);
+            debug_if(DEBUG_ON, "APP: ButtonType::BtnUp pressed - Show time\r\n");
+            uint32_t start = app_timer.read();
+            while ((app_timer.read()-start) < other_settings_timeout_s)
+            {
+                if (tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_ON)
+                {
+                    check_time(true);
+                }
+                else
+                {
+                    // Relay off, show furnance temperature
+                    check_temp_ctrl(true);
+                }
+                wait_us(500000);
+            }
+
         }
-        check_temp_ctrl();
-        // Do not disply time when relay is on
+
+        else if (down_state == ButtonState::BtnPressed)
+        {
+            debug_if(DEBUG_ON, "APP: ButtonType::BtnDown pressed - Show time\r\n");
+            uint32_t start = app_timer.read();
+            while ((app_timer.read()-start) < other_settings_timeout_s)
+            {
+                check_indoor_temperature();
+                wait_us(500000);
+            }
+        }
+
+        // Run main process function, display temperature if relay is on
+        check_temp_ctrl(tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_ON);
+
+        // Do not display time when relay is on
         check_time(tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_OFF);
 
         if (get_error() != APP_ERROR_NO_ERROR)
@@ -132,7 +165,8 @@ int App::settings_menu()
     const char* menu[LAST] = {"TEMP", "CZAS"};
     SettingsType current_settings = TEMPERATURE;
     int curr_set = (int)current_settings;
-    while(1)
+    uint32_t start = app_timer.read();
+    while ((app_timer.read()-start) < settings_timeout_s)
     {
         const ButtonState ok_state = btns.check_button(BtnTypeOk);
         const ButtonState up_state = btns.check_button(BtnTypeUp);
@@ -142,6 +176,7 @@ int App::settings_menu()
 
         if (ok_state == ButtonState::BtnPressed)
         {
+            start = app_timer.read();
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             if (current_settings == TEMPERATURE)
             {
@@ -155,6 +190,7 @@ int App::settings_menu()
         }
         else if (down_state == ButtonState::BtnPressed)
         {
+            start = app_timer.read();
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown pressed\r\n");
             curr_set--;
             if (curr_set < 0)
@@ -164,8 +200,14 @@ int App::settings_menu()
         }
         else if (up_state == ButtonState::BtnPressed)
         {
+            start = app_timer.read();
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnUp pressed\r\n");
             curr_set = (curr_set+1) % (int)LAST;
+        }
+
+        if (ok_state == ButtonState::BtnHold_5s)
+        {
+            break;
         }
     }
     return 0;
@@ -201,17 +243,22 @@ void App::ev_kick_watchdog()
 }
 
 //------------------------------------------------------------------------------
-void App::check_temp_ctrl()
+void App::check_temp_ctrl(bool show_temp)
 {
     if (update_temp_ctrl)
     {
-        debug_if(DEBUG_ON, "APP: update_temp_ctrl set ON\r\n");
+        debug_if(DEBUG_ON, "APP: update_temp_ctrl\r\n");
+        // Update temperatures
+        tctrl.update_temp_thresholds(AppSettings::instance().get_current().temp);
         TempController::TempCtrlError status = tctrl.process();
         switch (status)
         {
             case TempController::TempCtrlError::TEMP_CTRL_NOERR:
-                debug_if(DEBUG_ON, "APP: LAST temperature: %3.1f [C]\r\n", tctrl.get_last_temperature());
-                disp.print_temperature(tctrl.get_last_temperature());
+                if (show_temp)
+                {
+                    debug_if(DEBUG_ON, "APP: LAST furnance temperature: %3.1f [C]\r\n", tctrl.get_last_temperature());
+                    disp.print_temperature(tctrl.get_last_temperature());
+                }
                 break;
 
             case TempController::TempCtrlError::TEMP_CTRL_NO_SENSOR:
@@ -231,11 +278,12 @@ void App::check_temp_ctrl()
 }
 
 //------------------------------------------------------------------------------
-void App::check_time(bool show)
+void App::check_time(bool show_time)
 {
     if (update_time)
     {
-        if (show)
+        // No need to read time if it's not gonne be displayed
+        if (show_time)
         {
             static bool blink_on = false;
             SystemTime current_time;
@@ -243,10 +291,10 @@ void App::check_time(bool show)
             if (ret > 0)
             {
                 debug_if(DEBUG_ON, "APP: update_time - get_time error occured! ERR:%d\r\n", ret);
+                set_error(APP_ERROR_NO_RTC);
             }
             else
             {
-                // Do not disply time when relay is on
                 debug_if(DEBUG_ON, "APP: Current time: %s\r\n", SystemRtc::time_date_string(current_time));
                 blink_on = blink_on^1;
                 disp.print_time(current_time.hours, current_time.minutes, blink_on);
@@ -254,6 +302,14 @@ void App::check_time(bool show)
         }
         update_time = false;
     }
+}
+
+//------------------------------------------------------------------------------
+void App::check_indoor_temperature()
+{
+    float temperature = SystemRtc::instance().get_temperature();
+    debug_if(DEBUG_ON, "APP: Current indoor temperature: %3.1f\r\n", temperature);
+    disp.print_temperature(temperature, TM1637_BRT3);
 }
 
 //------------------------------------------------------------------------------

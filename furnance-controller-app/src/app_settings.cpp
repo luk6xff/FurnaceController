@@ -7,6 +7,7 @@
 
 #define DEBUG_ON 1
 
+
 //------------------------------------------------------------------------------
 AppSettings::AppSettings()
     : at24c32_i2c(AT24CXX_SDA, AT24CXX_SCL)
@@ -48,6 +49,9 @@ void AppSettings::init()
 {
     if (read_rettings())
     {
+        // Print content
+        print_current_settings();
+
         // Check if settings are valid
         if (get_current().magic == get_defaults().magic && \
             get_current().version == get_defaults().version)
@@ -109,6 +113,19 @@ bool AppSettings::read_rettings()
 }
 
 //------------------------------------------------------------------------------
+void AppSettings::print_current_settings()
+{
+    debug_if(DEBUG_ON, "APP_SETTINGS: <<CURRENT APP SETTINGS>>\r\n");
+    debug_if(DEBUG_ON, "magic: 0x%08x\r\n", get_current().magic);
+    debug_if(DEBUG_ON, "version: 0x%08x\r\n", get_current().version);
+    debug_if(DEBUG_ON, "temp.temp_min: %d\r\n", get_current().temp.temp_min);
+    debug_if(DEBUG_ON, "temp.temp_max: %d\r\n", get_current().temp.temp_max);
+    debug_if(DEBUG_ON, "temp.temp_relay_on: %d\r\n", get_current().temp.temp_relay_on);
+    debug_if(DEBUG_ON, "temp.temp_relay_off: %d\r\n", get_current().temp.temp_relay_off);
+    debug_if(DEBUG_ON, "APP_SETTINGS: <<CURRENT APP SETTINGS>>\r\n\r\n");
+}
+
+//------------------------------------------------------------------------------
 bool AppSettings::set_date_time(Buttons& btns, Display& disp)
 {
     SystemTime time;
@@ -125,7 +142,11 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
 
     }
     disp.print_time(time.hours, time.minutes, true);
-    while (1)
+    // Set timeout
+    Timer t;
+    t.start();
+    uint32_t start = t.read();
+    while ((t.read()-start) < settings_timeout_s)
     {
         const ButtonState ok_state = btns.check_button(BtnTypeOk);
         const ButtonState up_state = btns.check_button(BtnTypeUp);
@@ -134,11 +155,13 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
         {
             if (up_state == ButtonState::BtnPressed)
             {
+                start = t.read();
                 time.minutes = (time.minutes+1) % 60;
                 disp.print_time(time.hours, time.minutes, true);
             }
             else if (down_state == ButtonState::BtnPressed)
             {
+                start = t.read();
                 if (time.minutes == 0)
                 {
                     time.minutes = 59;
@@ -152,6 +175,7 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
             }
             else if (ok_state == ButtonState::BtnPressed)
             {
+                start = t.read();
                 h_or_m = 1; // hours
             }
         }
@@ -159,11 +183,13 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
         {
             if (up_state == ButtonState::BtnPressed)
             {
+                start = t.read();
                 time.hours = (time.hours+1) % 24;
                 disp.print_time(time.hours, time.minutes, true);
             }
             else if (down_state == ButtonState::BtnPressed)
             {
+                start = t.read();
                 if (time.hours == 0)
                 {
                     time.hours = 23;
@@ -176,18 +202,16 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
             }
             else if (ok_state == ButtonState::BtnPressed)
             {
+                start = t.read();
                 h_or_m = 1; // hours
             }
         }
 
         if (ok_state == ButtonState::BtnHold_5s)
         {
+            start = t.read();
             is_time_set = true;
             break;
-        }
-        else if (ok_state == ButtonState::BtnHold_1s)
-        {
-            // Nothing
         }
     }
 
@@ -215,10 +239,10 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
 bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
 {
     TempController::TempCtrlSettings temps = get_current().temp;
+    Timer t;
     bool is_temp_set = false;
     enum SettingsType
     {
-        FIRST = -1,
         TEMP_RELAY_ON = 0,
         TEMP_RELAY_OFF,
         LAST,
@@ -226,7 +250,9 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
     const char* menu[LAST] = {"T_ON", "TOFF"};
     SettingsType curr_set = TEMP_RELAY_ON;
 
-    while (1)
+    t.start();
+    uint32_t start = t.read();
+    while ((t.read()-start) < settings_timeout_s)
     {
         ButtonState ok_state = btns.check_button(BtnTypeOk);
         ButtonState up_state = btns.check_button(BtnTypeUp);
@@ -235,35 +261,39 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
 
         if (ok_state == ButtonState::BtnPressed)
         {
+            start = t.read();
             if (curr_set == TEMP_RELAY_ON)
             {
                 debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_RELAY_ON: %d chosen! \r\n", temps.temp_relay_on);
                 disp.print_temperature(temps.temp_relay_on);
-                while (1)
+                while ((t.read()-start) < settings_timeout_s)
                 {
                     ok_state = btns.check_button(BtnTypeOk);
                     up_state = btns.check_button(BtnTypeUp);
                     down_state = btns.check_button(BtnTypeDown);
                     if (up_state == ButtonState::BtnPressed)
                     {
+                        start = t.read();
                         temps.temp_relay_on++;
                         if (temps.temp_relay_on > temps.temp_max)
                         {
-                            temps.temp_relay_on = temps.temp_min;
+                            temps.temp_relay_on = temps.temp_relay_off;
                         }
                         disp.print_temperature(temps.temp_relay_on);
                     }
                     else if (down_state == ButtonState::BtnPressed)
                     {
+                        start = t.read();
                         temps.temp_relay_on--;
-                        if (temps.temp_relay_on < temps.temp_min)
+                        if (temps.temp_relay_on < temps.temp_relay_off)
                         {
                             temps.temp_relay_on = temps.temp_max;
                         }
                         disp.print_temperature(temps.temp_relay_on);
                     }
-                    if (ok_state == ButtonState::BtnHold_1s)
+                    if (ok_state == ButtonState::BtnHold_5s)
                     {
+                        start = t.read();
                         is_temp_set = true;
                         break;
                     }
@@ -273,13 +303,14 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
             {
                 debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_RELAY_OFF: %d chosen! \r\n", temps.temp_relay_off);
                 disp.print_temperature(temps.temp_relay_off);
-                while (1)
+                while ((t.read()-start) < settings_timeout_s)
                 {
                     ok_state = btns.check_button(BtnTypeOk);
                     up_state = btns.check_button(BtnTypeUp);
                     down_state = btns.check_button(BtnTypeDown);
                     if (up_state == ButtonState::BtnPressed)
                     {
+                        start = t.read();
                         temps.temp_relay_off++;
                         if (temps.temp_relay_off > temps.temp_relay_on)
                         {
@@ -289,6 +320,7 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
                     }
                     else if (down_state == ButtonState::BtnPressed)
                     {
+                        start = t.read();
                         temps.temp_relay_off--;
                         if (temps.temp_relay_off < temps.temp_min)
                         {
@@ -296,8 +328,9 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
                         }
                         disp.print_temperature(temps.temp_relay_off);
                     }
-                    if (ok_state == ButtonState::BtnHold_1s)
+                    if (ok_state == ButtonState::BtnHold_5s)
                     {
+                        start = t.read();
                         is_temp_set = true;
                         break;
                     }
@@ -311,26 +344,26 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
 
         else if (up_state == ButtonState::BtnPressed)
         {
+            start = t.read();
             curr_set = (SettingsType)(((int)curr_set+1)%(int)LAST);
         }
 
         else if (down_state == ButtonState::BtnPressed)
         {
-            if ((int)curr_set < 0)
+            start = t.read();
+            if ((int)curr_set == 0)
             {
-               curr_set = (SettingsType)((int)LAST-1);
+               curr_set = (SettingsType)((int)LAST);
             }
             curr_set = (SettingsType)((int)curr_set-1);
-
         }
     }
 
     disp.clear();
     if (is_temp_set)
     {
-        Settings current = get_current();
-        current.temp = temps;
-        if (!save_settings(current))
+        current_settings.temp = temps;
+        if (!save_settings(get_current()))
         {
             debug_if(DEBUG_ON, "APP_SETTINGS: Updating eeprom with new temperatures failed!\r\n");
             current_settings = default_settings;

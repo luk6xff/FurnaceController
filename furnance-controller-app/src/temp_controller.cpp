@@ -4,9 +4,9 @@
 #define DEBUG_ON 1
 
 //------------------------------------------------------------------------------
-TempController::TempController(const TempCtrlSettings& temps)
+TempController::TempController(const TempCtrlSettings& temp_thresh)
     : ds1820_sensors_num(DS18B20_SENSORS_NUM)
-    , temperatures(temps)
+    , temp_thresholds(temp_thresh)
     , relay_pin(RELAY_PIN)
     , relay_status(TEMP_CTRL_RELAY_OFF)
     , last_temperature(0.0f)
@@ -36,12 +36,12 @@ TempController::TempCtrlError TempController::get_temperature(float& temperature
     ds1820_convert_temperature(ALL);
     temperature = ds1820_read_temperature(CELSIUS);
 
-    if (temperature < temperatures.temp_min)
+    if (temperature < temp_thresholds.temp_min)
     {
         return TEMP_CTRL_TEMP_TOO_LOW;
     }
 
-    else if (temperature > temperatures.temp_max)
+    else if (temperature > temp_thresholds.temp_max)
     {
         return TEMP_CTRL_TEMP_TOO_HIGH;
     }
@@ -65,11 +65,11 @@ TempController::TempCtrlError TempController::process()
         return status;
     }
     // Enable relay
-    if (last_temperature > temperatures.temp_relay_on)
+    if (last_temperature > temp_thresholds.temp_relay_on)
     {
         enable_relay(TEMP_CTRL_RELAY_ON);
     }
-    else if (last_temperature <= (temperatures.temp_relay_off))
+    else if (last_temperature <= (temp_thresholds.temp_relay_off))
     {
         enable_relay(TEMP_CTRL_RELAY_OFF);
     }
@@ -80,6 +80,12 @@ TempController::TempCtrlError TempController::process()
 TempController::TempCtrlRelayStatus TempController::get_relay_status() const
 {
     return relay_status;
+}
+
+//------------------------------------------------------------------------------
+void TempController::update_temp_thresholds(const TempCtrlSettings& temp_thresh)
+{
+    temp_thresholds = temp_thresh;
 }
 
 //------------------------------------------------------------------------------

@@ -9,6 +9,8 @@
 #include "display.h"
 #include "buttons.h"
 
+static const uint32_t settings_timeout_s = 30; //[s]
+
 class AppSettings
 {
 
@@ -36,6 +38,8 @@ public:
 private:
     bool save_settings(const Settings &settings);
     bool read_rettings();
+
+    void print_current_settings();
 
 private:
     AppSettings();

@@ -35,7 +35,7 @@ void Display::enable(bool on_off)
 }
 
 //------------------------------------------------------------------------------
-void Display::print_temperature(float temp)
+void Display::print_temperature(float temp, uint8_t brightness)
 {
     const uint8_t num_of_chars = 5;
     char buf[num_of_chars];
@@ -78,12 +78,12 @@ void Display::print_temperature(float temp)
     }
 
     tm1637_clear(&disp);
-    tm1637_set_brightness(&disp, TM1637_BRT6);
+    tm1637_set_brightness(&disp, brightness);
     tm1637_print(&disp, (const uint8_t*)buf, num_of_chars);
 }
 
 //------------------------------------------------------------------------------
-void Display::print_time(uint8_t hour, uint8_t min, bool blink)
+void Display::print_time(uint8_t hour, uint8_t min, bool blink, uint8_t brightness)
 {
     const uint8_t buf_size = 5;
     char buf[buf_size];
@@ -97,7 +97,7 @@ void Display::print_time(uint8_t hour, uint8_t min, bool blink)
         sprintf(buf, "%02d%02d", hour, min);
     }
     tm1637_clear(&disp);
-    tm1637_set_brightness(&disp, TM1637_BRT3);
+    tm1637_set_brightness(&disp, brightness);
     tm1637_print(&disp, (const uint8_t*)buf, buf_size);
 }
 

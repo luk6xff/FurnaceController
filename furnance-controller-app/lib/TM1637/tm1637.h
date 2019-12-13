@@ -280,7 +280,7 @@ extern const uint16_t TM1637_FONT[];
 #define TM1637_SW_NONE      0xFF
 
 // BIT DELAY microseconds, check what works on your HW
-#define TM1637_BIT_DELAY  20
+#define TM1637_BIT_DELAY  10
 
 //TM1637 Display data
 #define TM1637_MAX_DIGITS_NUM  6

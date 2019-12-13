@@ -1,7 +1,7 @@
 #include "buttons.h"
 #include "hw_config.h"
 
-#define DEBUG_ON 1
+#define DEBUG_ON 0
 
 //------------------------------------------------------------------------------
 Button::Button(PinName pin_name)
