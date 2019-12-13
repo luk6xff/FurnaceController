@@ -24,8 +24,8 @@
 #define DS18B20_DATA_PIN    PE_12
 // BUTTONS
 #define BTN_OK    PE_12
-#define BTN_LEFT  PE_14
-#define BTN_RIGHT PA_15
+#define BTN_DOWN  PE_14
+#define BTN_UP PA_15
 
 
 #elif BOARD_MBED_DISCO_L476VG
@@ -46,8 +46,8 @@
 #define DS18B20_DATA_PIN    PE_12
 // BUTTONS
 #define BTN_OK    PE_13
-#define BTN_LEFT  PE_14
-#define BTN_RIGHT PA_15
+#define BTN_DOWN  PE_14
+#define BTN_UP    PA_15
 // RELAY
 #define RELAY_PIN PE_11
 

@@ -39,7 +39,7 @@ void App::run()
                 int res = main_app();
                 if (res == 1)
                 {
-                    debug_if(DEBUG_ON, "APP: Setting menu chosen\r\n");
+                    debug_if(DEBUG_ON, "APP: Settings menu chosen\r\n");
                     current_state = Settings;
                 }
                 else if (res == 2)
@@ -94,14 +94,13 @@ int App::main_app()
 
     while(1)
     {
-        Buttons::BtnInfo info = btns.check_buttons();
-        if (info.state[Buttons::ButtonType::BtnOk] == ButtonState::BtnPressed)
+        if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (info.state[Buttons::ButtonType::BtnDown] == ButtonState::BtnPressed ||
-                 info.state[Buttons::ButtonType::BtnUp] == ButtonState::BtnPressed)
+        else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed ||
+                 btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown/BtnUp pressed\r\n");
         }
@@ -122,40 +121,44 @@ int App::settings_menu()
     debug("APP: --- Hello from SETTINGS ---\r\n");
     enum SettingsType
     {
-        TEMPERATURE,
+        TEMPERATURE = 0,
         TIME,
-        LAST
+        LAST,
     };
     const char* menu[LAST] = {"TEMP", "CZAS"};
     SettingsType current_settings = TEMPERATURE;
-    uint8_t curr_set = (int)current_settings;
+    int curr_set = (int)current_settings;
     while(1)
     {
-        Buttons::BtnInfo info = btns.check_buttons();
-        disp.print(menu[current_settings], 4);
+        current_settings = (SettingsType)curr_set;
+        disp.print(menu[curr_set], 4);
 
-        if (info.state[Buttons::ButtonType::BtnOk] == ButtonState::BtnPressed)
+        if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
         {
-            if ((SettingsType)curr_set == TEMPERATURE)
+            if (current_settings == TEMPERATURE)
             {
                 AppSettings::instance().set_temperatures(btns, disp);
             }
-            else if ((SettingsType)curr_set == TIME)
+            else if (current_settings == TIME)
             {
                 AppSettings::instance().set_date_time(btns, disp);
             }
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             return 1;
         }
-        else if (info.state[Buttons::ButtonType::BtnDown] == ButtonState::BtnPressed)
+        else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown pressed\r\n");
-            curr_set++ % (int)LAST;
+            curr_set--;
+            if (curr_set < 0)
+            {
+                curr_set = (int)LAST - 1;
+            };
         }
-        else if (info.state[Buttons::ButtonType::BtnUp] == ButtonState::BtnPressed)
+        else if (btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
         {
             debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnUp pressed\r\n");
-            curr_set-- % (int)LAST;
+            curr_set = (curr_set+1) % (int)LAST;
         }
     }
     return 0;

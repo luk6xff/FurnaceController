@@ -126,37 +126,51 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
     disp.print_time(time.hours, time.minutes, true);
     while (!is_time_set)
     {
-        Buttons::BtnInfo inf = btns.check_buttons();
         if (h_or_m == 0) // minutes
         {
-            if (inf.state[Buttons::ButtonType::BtnUp]  == ButtonState::BtnPressed)
+            if (btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
             {
-                time.minutes++ % 60;
+                time.minutes = (time.minutes+1) % 60;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnDown]  == ButtonState::BtnPressed)
+            else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed)
             {
-                time.minutes-- % 60;
+                if (time.minutes == 0)
+                {
+                    time.minutes = 59;
+                }
+                else
+                {
+                    time.minutes--;
+                }
+
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnOk]  == ButtonState::BtnPressed)
+            else if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
             {
                 h_or_m = 1; // hours
             }
         }
         else if (h_or_m == 1)
         {
-            if (inf.state[Buttons::ButtonType::BtnUp]  == ButtonState::BtnPressed)
+            if (btns.check_button(BtnTypeUp) == ButtonState::BtnPressed)
             {
                 time.hours++ % 24;
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnDown]  == ButtonState::BtnPressed)
+            else if (btns.check_button(BtnTypeDown) == ButtonState::BtnPressed)
             {
-                time.hours-- % 24;
+                if (time.hours == 0)
+                {
+                    time.hours = 23;
+                }
+                else
+                {
+                    time.hours--;
+                }
                 disp.print_time(time.hours, time.minutes, true);
             }
-            else if (inf.state[Buttons::ButtonType::BtnOk]  == ButtonState::BtnPressed)
+            else if (btns.check_button(BtnTypeOk) == ButtonState::BtnPressed)
             {
                 h_or_m = 1; // hours
             }

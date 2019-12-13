@@ -2,38 +2,16 @@
 #define __BUTTONS_H__
 
 #include "mbed.h"
-#include <vector>
+#include "button.h"
+#include <map>
 
 
 typedef enum
 {
-    BtnNotPressed = 0,
-    BtnPressed,
-    BtnHold_50ms,
-    BtnHold_1s,
-    BtnHold_5s,
-    BtnInvalid,
-} ButtonState;
-
-
-
-class Button
-{
-
-public:
-    explicit Button(PinName pin_name);
-
-    ButtonState get_state() const;
-
-private:
-    void raise_irq();
-    void fall_irq();
-
-private:
-    InterruptIn pin;
-    ButtonState last_state;
-};
-
+    BtnTypeOk= 0,
+    BtnTypeDown,
+    BtnTypeUp,
+} ButtonType;
 
 class Buttons
 {
@@ -44,28 +22,15 @@ public:
 
     explicit Buttons();
 
-    typedef enum
-    {
-        BtnOk= 0,
-        BtnDown,
-        BtnUp,
-        BtnOther,
-    } ButtonType;
-
-
-
-    typedef struct
-    {
-        ButtonState state[buttons_num];
-    } BtnInfo;
-
-
-    BtnInfo check_buttons();
+    ButtonState check_button(ButtonType type);
 
 private:
-    DigitalIn btn_ok;
-    DigitalIn btn_left;
-    DigitalIn btn_right;
+    std::map<ButtonType, Button*> buttons_map;
+
+    // Buttons
+    Button btn_ok;
+    Button btn_down;
+    Button btn_up;
 };
 
 #endif // __BUTTONS_H__
