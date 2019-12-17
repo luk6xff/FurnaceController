@@ -9,7 +9,7 @@
 #include "display.h"
 #include "buttons.h"
 
-static const uint32_t settings_timeout_s = 30; //[s]
+static const uint32_t settings_timeout_s = 15; //[s]
 
 class AppSettings
 {
