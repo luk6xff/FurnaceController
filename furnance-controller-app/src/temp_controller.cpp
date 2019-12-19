@@ -65,7 +65,7 @@ TempController::TempCtrlError TempController::process()
         return status;
     }
     // Enable relay
-    if (last_temperature > temp_thresholds.temp_relay_on)
+    if (last_temperature >= temp_thresholds.temp_relay_on)
     {
         enable_relay(TEMP_CTRL_RELAY_ON);
     }

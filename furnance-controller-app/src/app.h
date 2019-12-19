@@ -8,8 +8,6 @@
 #include "app_settings.h"
 #include "app_errors.h"
 
-#define WATCHDOG_TIMEOUT_MS 10000
-
 
 class App
 {
@@ -35,8 +33,7 @@ private:
     void error_handler();
 
     // Event handlers
-    void ev_update_temp_ctrl();
-    void ev_update_time();
+    void ev_update_param();
     void ev_kick_watchdog();
 
     // Others
@@ -55,6 +52,7 @@ private:
 
     Watchdog& watchdog;
     Ticker watchdog_ticker;
+    Ticker update_param_ticker;
     Timer app_timer;
     // Event flags
     volatile bool update_temp_ctrl;

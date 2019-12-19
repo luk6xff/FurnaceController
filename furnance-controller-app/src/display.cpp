@@ -77,7 +77,7 @@ void Display::print_temperature(float temp, uint8_t brightness)
         }
     }
 
-    tm1637_clear(&disp);
+    tm1637_locate(&disp, 0);
     tm1637_set_brightness(&disp, brightness);
     tm1637_print(&disp, (const uint8_t*)buf, num_of_chars);
 }
@@ -96,7 +96,7 @@ void Display::print_time(uint8_t hour, uint8_t min, bool blink, uint8_t brightne
     {
         sprintf(buf, "%02d%02d", hour, min);
     }
-    tm1637_clear(&disp);
+    tm1637_locate(&disp, 0);
     tm1637_set_brightness(&disp, brightness);
     tm1637_print(&disp, (const uint8_t*)buf, buf_size);
 }

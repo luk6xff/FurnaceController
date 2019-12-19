@@ -4,6 +4,14 @@
 #define DEBUG_ON 0
 
 //------------------------------------------------------------------------------
+#define OPTIONAL_PARAM_TIMEOUT_S      5 // [s]
+#define UPDATE_PARAM_TICKER_PERIOD_S  1 // every 1 second
+#define TEMPERATURE_UPDATE_PERIOD_S   2 // every 2 seconds
+#define TIME_UPDATE_PERIOD_S          1 // every 2 second
+#define WATCHDOG_TIMEOUT_MS           10000 // 10 seconds
+#define WATCHDOG_KICKER_PERIOD_S      6 // every 6 seconds
+
+//------------------------------------------------------------------------------
 App &App::instance()
 {
     static App app;
@@ -76,7 +84,8 @@ void App::init()
     debug_if(DEBUG_ON, "APP: --- Hello from INIT ---\r\n");
     // Configure Watchdog
     watchdog.start(WATCHDOG_TIMEOUT_MS);
-    watchdog_ticker.attach(mbed::callback(this, &App::ev_kick_watchdog), 5); // every 5 seconds
+    watchdog_ticker.attach(mbed::callback(this, &App::ev_kick_watchdog),
+                                          WATCHDOG_KICKER_PERIOD_S);
     // Start global timer
     app_timer.start();
 
@@ -88,12 +97,9 @@ void App::init()
 int App::main_app()
 {
     debug_if(DEBUG_ON, "APP: --- MAIN_APP ---\r\n");
-    const uint8_t other_settings_timeout_s = 4; //[s]
-    Ticker update_temp_ticker;
-    update_temp_ticker.attach(mbed::callback(this, &App::ev_update_temp_ctrl), 1); // every 1 second
 
-    Ticker update_time_ticker;
-    update_time_ticker.attach(mbed::callback(this, &App::ev_update_time), 1); // every 1 second
+    update_param_ticker.attach(mbed::callback(this, &App::ev_update_param),
+                                             UPDATE_PARAM_TICKER_PERIOD_S);
 
     while(1)
     {
@@ -111,7 +117,7 @@ int App::main_app()
         {
             debug_if(DEBUG_ON, "APP: ButtonType::BtnUp pressed - Show time\r\n");
             uint32_t start = app_timer.read();
-            while ((app_timer.read()-start) < other_settings_timeout_s)
+            while ((app_timer.read()-start) < OPTIONAL_PARAM_TIMEOUT_S)
             {
                 if (tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_ON)
                 {
@@ -124,25 +130,34 @@ int App::main_app()
                 }
                 wait_us(500000);
             }
-
         }
 
         else if (down_state == ButtonState::BtnPressed)
         {
-            debug_if(DEBUG_ON, "APP: ButtonType::BtnDown pressed - Show time\r\n");
+            debug_if(DEBUG_ON, "APP: ButtonType::BtnDown pressed - Show indoor temperature\r\n");
             uint32_t start = app_timer.read();
-            while ((app_timer.read()-start) < other_settings_timeout_s)
+            while ((app_timer.read()-start) < OPTIONAL_PARAM_TIMEOUT_S)
             {
                 check_indoor_temperature();
                 wait_us(500000);
             }
         }
 
-        // Run main process function, display temperature if relay is on
-        check_temp_ctrl(tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_ON);
+        if (tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_OFF)
+        {
+            // Display time when relay is off
+            check_time(true);
+            // Run main process function, don't display temperature if relay is off
+            check_temp_ctrl(false);
+        }
+        else
+        {
+            // Run main process function, don't display temperature if relay is on
+            check_temp_ctrl(true);
+        }
 
-        // Do not display time when relay is on
-        check_time(tctrl.get_relay_status() == TempController::TEMP_CTRL_RELAY_OFF);
+
+
 
         if (get_error() != APP_ERROR_NO_ERROR)
         {
@@ -223,17 +238,20 @@ void App::error_handler()
 }
 
 //------------------------------------------------------------------------------
-void App::ev_update_temp_ctrl()
+void App::ev_update_param()
 {
-    debug_if(DEBUG_ON, "APP: ev_update_temp_ctrl\r\n");
-    update_temp_ctrl = true;
-}
+    debug_if(DEBUG_ON, "APP: ev_update_param\r\n");
+    static uint32_t counter = 0;
+    counter++;
 
-//------------------------------------------------------------------------------
-void App::ev_update_time()
-{
-    debug_if(DEBUG_ON, "APP: ev_update_time\r\n");
-    update_time = true;
+    if ((counter % TEMPERATURE_UPDATE_PERIOD_S) == 0)
+    {
+        update_temp_ctrl = true;
+    }
+    if ((counter % TIME_UPDATE_PERIOD_S) == 0)
+    {
+        update_time = true;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -280,25 +298,22 @@ void App::check_temp_ctrl(bool show_temp)
 //------------------------------------------------------------------------------
 void App::check_time(bool show_time)
 {
-    if (update_time)
+    // No need to read time if it's not gonne be displayed
+    if (update_time && show_time)
     {
-        // No need to read time if it's not gonne be displayed
-        if (show_time)
+        static bool blink_on = false;
+        static SystemTime current_time;
+        int ret = SystemRtc::instance().get_time(current_time);
+        if (ret > 0)
         {
-            static bool blink_on = false;
-            SystemTime current_time;
-            int ret = SystemRtc::instance().get_time(current_time);
-            if (ret > 0)
-            {
-                debug_if(DEBUG_ON, "APP: update_time - get_time error occured! ERR:%d\r\n", ret);
-                set_error(APP_ERROR_NO_RTC);
-            }
-            else
-            {
-                debug_if(DEBUG_ON, "APP: Current time: %s\r\n", SystemRtc::time_date_string(current_time));
-                blink_on = blink_on^1;
-                disp.print_time(current_time.hours, current_time.minutes, blink_on);
-            }
+            debug_if(DEBUG_ON, "APP: update_time - get_time error occured! ERR:%d\r\n", ret);
+            set_error(APP_ERROR_NO_RTC);
+        }
+        else
+        {
+            debug_if(DEBUG_ON, "APP: Current time: %s\r\n", SystemRtc::time_date_string(current_time));
+            blink_on = blink_on^1;
+            disp.print_time(current_time.hours, current_time.minutes, blink_on);
         }
         update_time = false;
     }
