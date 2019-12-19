@@ -7,7 +7,7 @@
 #define OPTIONAL_PARAM_TIMEOUT_S      5 // [s]
 #define UPDATE_PARAM_TICKER_PERIOD_S  1 // every 1 second
 #define TEMPERATURE_UPDATE_PERIOD_S   2 // every 2 seconds
-#define TIME_UPDATE_PERIOD_S          1 // every 2 second
+#define TIME_UPDATE_PERIOD_S          1 // every 1 second
 #define WATCHDOG_TIMEOUT_MS           10000 // 10 seconds
 #define WATCHDOG_KICKER_PERIOD_S      6 // every 6 seconds
 
