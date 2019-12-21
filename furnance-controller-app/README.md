@@ -1,4 +1,4 @@
-#Furnace Controller platformio-mbed app
+# Furnace Controller platformio-mbed app
 
 
 ## Install platformio
