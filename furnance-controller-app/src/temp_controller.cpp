@@ -3,16 +3,13 @@
 
 #define DEBUG_ON 0
 
-#define VALID_TEMPERATURE_THRESHOLD_DIFF_DEG 20 // Celsius degrees
-#define INVALID_TEMPERATURE_ERROR_NUM        10 // Number of errors to be occur in the row after the real error will be displayed
-
 //------------------------------------------------------------------------------
 TempController::TempController(const TempCtrlSettings& temp_thresh)
     : ds1820_sensors_num(DS18B20_SENSORS_NUM)
     , temp_thresholds(temp_thresh)
     , relay_pin(RELAY_PIN)
     , relay_status(TEMP_CTRL_RELAY_OFF)
-    , last_valid_temperature(0.0f)
+    , last_valid_temperature(-1)
     , last_invalid_temperature_counter(0)
 {
     // DS18B20
@@ -120,6 +117,7 @@ TempController::TempCtrlError TempController::temperature_sensor_reader(float& l
     }
     else
     {
+        // Measure temperature
         ds1820_convert_temperature(THIS);
         temperature = ds1820_read_temperature(CELSIUS);
         last_temperature = temperature;
@@ -134,8 +132,9 @@ TempController::TempCtrlError TempController::temperature_sensor_reader(float& l
             last_invalid_temperature_counter++;
             err = TEMP_CTRL_TEMP_TOO_HIGH;
         }
-        else if (temperature > (last_valid_temperature+VALID_TEMPERATURE_THRESHOLD_DIFF_DEG) || \
-                 temperature < (last_valid_temperature-VALID_TEMPERATURE_THRESHOLD_DIFF_DEG))
+        else if (((int)last_valid_temperature != -1) && \
+                 temperature > (last_valid_temperature+temp_thresholds.temp_diff_valid) || \
+                 temperature < (last_valid_temperature-temp_thresholds.temp_diff_valid))
         {
             last_invalid_temperature_counter++;
             err = TEMP_CTRL_TEMP_INVALID;
@@ -147,7 +146,7 @@ TempController::TempCtrlError TempController::temperature_sensor_reader(float& l
         }
     }
 
-    if (last_invalid_temperature_counter >= INVALID_TEMPERATURE_ERROR_NUM)
+    if (last_invalid_temperature_counter >= temp_thresholds.num_of_invalid_measurements_to_err)
     {
         return err;
     }

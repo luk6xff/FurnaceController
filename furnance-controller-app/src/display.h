@@ -8,12 +8,14 @@ class Display
 {
 public:
     Display();
-    void print(const char* data, size_t data_len);
+    void print(const char* data, size_t data_len, bool clear_on=false);
     void clear();
     void set_brightness(uint8_t brightness);
     void enable(bool on_off);
 
-    void print_temperature(float temp, uint8_t brightness=TM1637_BRT6);
+    void print_dec(int dec, bool clear_on=false);
+    void print_str(const char* str, size_t str_len, bool clear_on=false);
+    void print_temperature(float temp, uint8_t brightness=TM1637_BRT6, bool clear_on=false);
     void print_time(uint8_t hour, uint8_t min, bool blink = false, uint8_t brightness=TM1637_BRT3);
     void print_error(AppError error);
 

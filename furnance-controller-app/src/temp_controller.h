@@ -13,6 +13,8 @@ public:
         int temp_max;
         int temp_relay_on;
         int temp_relay_off;
+        int temp_diff_valid; // Difference between current and previous measurement to judge if it's valid.
+        int num_of_invalid_measurements_to_err; // Number of invalid measurements to set the error
     } TempCtrlSettings;
 
     typedef enum

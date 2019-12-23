@@ -10,8 +10,12 @@ Display::Display()
 }
 
 //------------------------------------------------------------------------------
-void Display::print(const char* data, size_t data_len)
+void Display::print(const char* data, size_t data_len, bool clear_on)
 {
+    if (clear_on)
+    {
+        clear();
+    }
     tm1637_print(&disp, (const uint8_t*)data, data_len);
 }
 
@@ -27,7 +31,6 @@ void Display::set_brightness(uint8_t brightness)
     tm1637_set_brightness(&disp, brightness);
 }
 
-
 //------------------------------------------------------------------------------
 void Display::enable(bool on_off)
 {
@@ -35,7 +38,36 @@ void Display::enable(bool on_off)
 }
 
 //------------------------------------------------------------------------------
-void Display::print_temperature(float temp, uint8_t brightness)
+void Display::print_str(const char* str, size_t str_len, bool clear_on)
+{
+    if (clear_on)
+    {
+        clear();
+    }
+    tm1637_locate(&disp, 0);
+    tm1637_set_brightness(&disp, TM1637_BRT5);
+    tm1637_print(&disp, (const uint8_t*)str, str_len);
+}
+
+//------------------------------------------------------------------------------
+void Display::print_dec(int dec, bool clear_on)
+{
+    const uint8_t num_of_chars = 4;
+    char buf[num_of_chars];
+
+    sprintf(buf, "%04d", dec);
+
+    if (clear_on)
+    {
+        clear();
+    }
+    tm1637_locate(&disp, 0);
+    tm1637_set_brightness(&disp, TM1637_BRT4);
+    tm1637_print(&disp, (const uint8_t*)buf, num_of_chars);
+}
+
+//------------------------------------------------------------------------------
+void Display::print_temperature(float temp, uint8_t brightness, bool clear_on)
 {
     const uint8_t num_of_chars = 5;
     char buf[num_of_chars];
@@ -77,6 +109,10 @@ void Display::print_temperature(float temp, uint8_t brightness)
         }
     }
 
+    if (clear_on)
+    {
+        clear();
+    }
     tm1637_locate(&disp, 0);
     tm1637_set_brightness(&disp, brightness);
     tm1637_print(&disp, (const uint8_t*)buf, num_of_chars);

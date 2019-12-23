@@ -125,8 +125,8 @@ int App::main_app()
                 }
                 else
                 {
-                    // Relay off, show furnance temperature
-                    check_temp_ctrl(true);
+                    // Relay off, only show furnance temperature
+                    disp.print_temperature(tctrl.get_last_valid_temperature());
                 }
                 wait_us(500000);
             }
@@ -187,7 +187,7 @@ int App::settings_menu()
         const ButtonState up_state = btns.check_button(BtnTypeUp);
         const ButtonState down_state = btns.check_button(BtnTypeDown);
         current_settings = (SettingsType)curr_set;
-        disp.print(menu[curr_set], 4);
+        disp.print_str(menu[curr_set], 4);
 
         if (ok_state == ButtonState::BtnPressed)
         {
@@ -285,6 +285,7 @@ void App::check_temp_ctrl(bool show_temp)
 
             case TempController::TempCtrlError::TEMP_CTRL_TEMP_TOO_LOW:
             case TempController::TempCtrlError::TEMP_CTRL_TEMP_TOO_HIGH:
+            case TempController::TempCtrlError::TEMP_CTRL_TEMP_INVALID:
                 set_error(APP_ERROR_INVALID_TEMP);
                 break;
 

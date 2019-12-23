@@ -46,6 +46,9 @@ private:
     Settings default_settings;
     Settings current_settings;
 
+    static const int k_temperature_min = -55;
+    static const int k_temperature_max = 125;
+
     // AT24C32
     I2C at24c32_i2c;
     DigitalOut at24c32_wp;

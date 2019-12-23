@@ -32,6 +32,8 @@ AppSettings::AppSettings()
             .temp_max = 90,
             .temp_relay_on = 30,
             .temp_relay_off = 28,
+            .temp_diff_valid = 20,
+            .num_of_invalid_measurements_to_err = 10,
         },
     };
 }
@@ -141,7 +143,7 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
         time.minutes = 0;
 
     }
-    disp.print_time(time.hours, time.minutes, true);
+    disp.print_time(time.hours, time.minutes, true, true);
     // Set timeout
     Timer t;
     t.start();
@@ -157,7 +159,7 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
             {
                 start = t.read();
                 time.minutes = (time.minutes+1) % 60;
-                disp.print_time(time.hours, time.minutes, true);
+                disp.print_time(time.hours, time.minutes, true, true);
             }
             else if (down_state == ButtonState::BtnPressed)
             {
@@ -171,7 +173,7 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
                     time.minutes--;
                 }
 
-                disp.print_time(time.hours, time.minutes, true);
+                disp.print_time(time.hours, time.minutes, true, true);
             }
             else if (ok_state == ButtonState::BtnPressed)
             {
@@ -185,7 +187,7 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
             {
                 start = t.read();
                 time.hours = (time.hours+1) % 24;
-                disp.print_time(time.hours, time.minutes, true);
+                disp.print_time(time.hours, time.minutes, true, true);
             }
             else if (down_state == ButtonState::BtnPressed)
             {
@@ -198,7 +200,7 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
                 {
                     time.hours--;
                 }
-                disp.print_time(time.hours, time.minutes, true);
+                disp.print_time(time.hours, time.minutes, true, true);
             }
             else if (ok_state == ButtonState::BtnPressed)
             {
@@ -245,9 +247,13 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
     {
         TEMP_RELAY_ON = 0,
         TEMP_RELAY_OFF,
+        TEMP_MIN,
+        TEMP_MAX,
+        TEMP_DIFF_VALID,
+        TEMP_INVALID_MEAS_NUM,
         LAST,
     };
-    const char* menu[LAST] = {"T_ON", "TOFF"};
+    const char* menu[LAST] = {"T_ON", "TOFF", "TMIN", "TMAX", "TDIF", "NinM"};
     SettingsType curr_set = TEMP_RELAY_ON;
 
     t.start();
@@ -257,7 +263,7 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
         ButtonState ok_state = btns.check_button(BtnTypeOk);
         ButtonState up_state = btns.check_button(BtnTypeUp);
         ButtonState down_state = btns.check_button(BtnTypeDown);
-        disp.print(menu[curr_set], 4);
+        disp.print_str(menu[curr_set], 4);
 
         if (ok_state == ButtonState::BtnPressed)
         {
@@ -265,7 +271,7 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
             if (curr_set == TEMP_RELAY_ON)
             {
                 debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_RELAY_ON: %d chosen! \r\n", temps.temp_relay_on);
-                disp.print_temperature(temps.temp_relay_on);
+                disp.print_temperature(temps.temp_relay_on, TM1637_BRT6, true);
                 while ((t.read()-start) < settings_timeout_s)
                 {
                     ok_state = btns.check_button(BtnTypeOk);
@@ -279,7 +285,7 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
                         {
                             temps.temp_relay_on = temps.temp_relay_off;
                         }
-                        disp.print_temperature(temps.temp_relay_on);
+                        disp.print_temperature(temps.temp_relay_on, TM1637_BRT6, true);
                     }
                     else if (down_state == ButtonState::BtnPressed)
                     {
@@ -289,7 +295,7 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
                         {
                             temps.temp_relay_on = temps.temp_max;
                         }
-                        disp.print_temperature(temps.temp_relay_on);
+                        disp.print_temperature(temps.temp_relay_on, TM1637_BRT6, true);
                     }
                     if (ok_state == ButtonState::BtnHold_5s)
                     {
@@ -316,7 +322,7 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
                         {
                             temps.temp_relay_off = temps.temp_min;
                         }
-                        disp.print_temperature(temps.temp_relay_off);
+                        disp.print_temperature(temps.temp_relay_off, TM1637_BRT6, true);
                     }
                     else if (down_state == ButtonState::BtnPressed)
                     {
@@ -326,7 +332,7 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
                         {
                             temps.temp_relay_off = temps.temp_relay_on;
                         }
-                        disp.print_temperature(temps.temp_relay_off);
+                        disp.print_temperature(temps.temp_relay_off, TM1637_BRT6, true);
                     }
                     if (ok_state == ButtonState::BtnHold_5s)
                     {
@@ -336,6 +342,155 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
                     }
                 }
             }
+            else if (curr_set == TEMP_MIN)
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_MIN: %d chosen! \r\n", temps.temp_min);
+                disp.print_temperature(temps.temp_min, TM1637_BRT6, true);
+                while ((t.read()-start) < settings_timeout_s)
+                {
+                    ok_state = btns.check_button(BtnTypeOk);
+                    up_state = btns.check_button(BtnTypeUp);
+                    down_state = btns.check_button(BtnTypeDown);
+                    if (up_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.temp_min++;
+                        if (temps.temp_min >= temps.temp_max)
+                        {
+                            temps.temp_min = k_temperature_min;
+                        }
+                        disp.print_temperature(temps.temp_min, TM1637_BRT6, true);
+                    }
+                    else if (down_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.temp_min--;
+                        if (temps.temp_min < k_temperature_min)
+                        {
+                            temps.temp_min = temps.temp_max-1;
+                        }
+                        disp.print_temperature(temps.temp_min, TM1637_BRT6, true);
+                    }
+                    if (ok_state == ButtonState::BtnHold_5s)
+                    {
+                        start = t.read();
+                        is_temp_set = true;
+                        break;
+                    }
+                }
+            }
+            else if (curr_set == TEMP_MAX)
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_MAX: %d chosen! \r\n", temps.temp_max);
+                disp.print_temperature(temps.temp_max, TM1637_BRT6, true);
+                while ((t.read()-start) < settings_timeout_s)
+                {
+                    ok_state = btns.check_button(BtnTypeOk);
+                    up_state = btns.check_button(BtnTypeUp);
+                    down_state = btns.check_button(BtnTypeDown);
+                    if (up_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.temp_max++;
+                        if (temps.temp_max >= k_temperature_max-1)
+                        {
+                            temps.temp_max = temps.temp_min+1;
+                        }
+                        disp.print_temperature(temps.temp_max, TM1637_BRT6, true);
+                    }
+                    else if (down_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.temp_max--;
+                        if (temps.temp_max <= temps.temp_min)
+                        {
+                            temps.temp_max = k_temperature_max;
+                        }
+                        disp.print_temperature(temps.temp_max, TM1637_BRT6, true);
+                    }
+                    if (ok_state == ButtonState::BtnHold_5s)
+                    {
+                        start = t.read();
+                        is_temp_set = true;
+                        break;
+                    }
+                }
+            }
+            else if (curr_set == TEMP_DIFF_VALID)
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_DIFF_VALID: %d chosen! \r\n", temps.temp_diff_valid);
+                disp.print_temperature(temps.temp_diff_valid, TM1637_BRT6, true);
+                while ((t.read()-start) < settings_timeout_s)
+                {
+                    ok_state = btns.check_button(BtnTypeOk);
+                    up_state = btns.check_button(BtnTypeUp);
+                    down_state = btns.check_button(BtnTypeDown);
+                    if (up_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.temp_diff_valid++;
+                        if (temps.temp_diff_valid > 100)
+                        {
+                            temps.temp_diff_valid = 0;
+                        }
+                        disp.print_temperature(temps.temp_diff_valid, TM1637_BRT6, true);
+                    }
+                    else if (down_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.temp_diff_valid--;
+                        if (temps.temp_diff_valid <= 0)
+                        {
+                            temps.temp_diff_valid = 100;
+                        }
+                        disp.print_temperature(temps.temp_diff_valid, TM1637_BRT6, true);
+                    }
+                    if (ok_state == ButtonState::BtnHold_5s)
+                    {
+                        start = t.read();
+                        is_temp_set = true;
+                        break;
+                    }
+                }
+            }
+            else if (curr_set == TEMP_INVALID_MEAS_NUM)
+            {
+                debug_if(DEBUG_ON, "APP_SETTINGS: TEMP_INVALID_MEAS_NUM: %d chosen! \r\n", temps.num_of_invalid_measurements_to_err);
+                disp.print_dec(temps.num_of_invalid_measurements_to_err, true);
+                while ((t.read()-start) < settings_timeout_s)
+                {
+                    ok_state = btns.check_button(BtnTypeOk);
+                    up_state = btns.check_button(BtnTypeUp);
+                    down_state = btns.check_button(BtnTypeDown);
+                    if (up_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.num_of_invalid_measurements_to_err++;
+                        if (temps.num_of_invalid_measurements_to_err > 100)
+                        {
+                            temps.num_of_invalid_measurements_to_err = 1;
+                        }
+                        disp.print_dec(temps.num_of_invalid_measurements_to_err, true);
+                    }
+                    else if (down_state == ButtonState::BtnPressed)
+                    {
+                        start = t.read();
+                        temps.num_of_invalid_measurements_to_err--;
+                        if (temps.num_of_invalid_measurements_to_err <= 1)
+                        {
+                            temps.num_of_invalid_measurements_to_err = 100;
+                        }
+                        disp.print_dec(temps.num_of_invalid_measurements_to_err, true);
+                    }
+                    if (ok_state == ButtonState::BtnHold_5s)
+                    {
+                        start = t.read();
+                        is_temp_set = true;
+                        break;
+                    }
+                }
+            }
+
             if (is_temp_set)
             {
                 break;
@@ -375,9 +530,14 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
             debug_if(DEBUG_ON, "APP_SETTINGS: Updating eeprom with new temperatures succeed!\r\n");
             disp.print("oooo", 4);
         }
+        wait_us(1000000);
+        return true;
     }
+
+    disp.print("nnnn", 4);
     wait_us(1000000);
     return true;
+
 }
 
 //------------------------------------------------------------------------------
