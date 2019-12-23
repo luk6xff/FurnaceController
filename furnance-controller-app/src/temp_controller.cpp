@@ -3,13 +3,17 @@
 
 #define DEBUG_ON 0
 
+#define VALID_TEMPERATURE_THRESHOLD_DIFF_DEG 20 // Celsius degrees
+#define INVALID_TEMPERATURE_ERROR_NUM        10 // Number of errors to be occur in the row after the real error will be displayed
+
 //------------------------------------------------------------------------------
 TempController::TempController(const TempCtrlSettings& temp_thresh)
     : ds1820_sensors_num(DS18B20_SENSORS_NUM)
     , temp_thresholds(temp_thresh)
     , relay_pin(RELAY_PIN)
     , relay_status(TEMP_CTRL_RELAY_OFF)
-    , last_temperature(0.0f)
+    , last_valid_temperature(0.0f)
+    , last_invalid_temperature_counter(0)
 {
     // DS18B20
     ds1820_mbed_init(DS18B20_DATA_PIN, NC);
@@ -28,51 +32,38 @@ TempController::TempController(const TempCtrlSettings& temp_thresh)
 //------------------------------------------------------------------------------
 TempController::TempCtrlError TempController::get_temperature(float& temperature)
 {
-    if (!is_sensor_available())
-    {
-        return TEMP_CTRL_NO_SENSOR;
-    }
-
-    ds1820_convert_temperature(ALL);
-    temperature = ds1820_read_temperature(CELSIUS);
-
-    if (temperature < temp_thresholds.temp_min)
-    {
-        return TEMP_CTRL_TEMP_TOO_LOW;
-    }
-
-    else if (temperature > temp_thresholds.temp_max)
-    {
-        return TEMP_CTRL_TEMP_TOO_HIGH;
-    }
-
-    return TEMP_CTRL_NOERR;
+    return temperature_sensor_reader(temperature);
 }
 
+
 //------------------------------------------------------------------------------
-float TempController::get_last_temperature() const
+float TempController::get_last_valid_temperature() const
 {
-    return last_temperature;
+    return last_valid_temperature;
 }
 
 //------------------------------------------------------------------------------
 TempController::TempCtrlError TempController::process()
 {
-    TempCtrlError status = get_temperature(last_temperature);
+    float read_temperature;
+    TempCtrlError status = get_temperature(read_temperature);
     if (status != TEMP_CTRL_NOERR)
     {
         debug_if(DEBUG_ON, "TEMP_CONTROLLER: get_temperature failed, STATUS: %d\r\n", status);
         return status;
     }
-    // Enable relay
-    if (last_temperature >= temp_thresholds.temp_relay_on)
+
+
+    // Update relay status
+    if (last_valid_temperature >= temp_thresholds.temp_relay_on)
     {
         enable_relay(TEMP_CTRL_RELAY_ON);
     }
-    else if (last_temperature <= (temp_thresholds.temp_relay_off))
+    else if (last_valid_temperature <= (temp_thresholds.temp_relay_off))
     {
         enable_relay(TEMP_CTRL_RELAY_OFF);
     }
+
     return status;
 }
 
@@ -114,6 +105,54 @@ void TempController::enable_relay(TempCtrlRelayStatus state)
     }
 
     relay_status = state;
+}
+
+//------------------------------------------------------------------------------
+TempController::TempCtrlError TempController::temperature_sensor_reader(float& last_temperature)
+{
+    TempCtrlError err = TEMP_CTRL_NOERR;
+    float temperature = 0.0f;
+
+    if (!is_sensor_available())
+    {
+        last_invalid_temperature_counter++;
+        err = TEMP_CTRL_NO_SENSOR;
+    }
+    else
+    {
+        ds1820_convert_temperature(THIS);
+        temperature = ds1820_read_temperature(CELSIUS);
+        last_temperature = temperature;
+
+        if (temperature <= temp_thresholds.temp_min)
+        {
+            last_invalid_temperature_counter++;
+            err = TEMP_CTRL_TEMP_TOO_LOW;
+        }
+        else if (temperature >= temp_thresholds.temp_max)
+        {
+            last_invalid_temperature_counter++;
+            err = TEMP_CTRL_TEMP_TOO_HIGH;
+        }
+        else if (temperature > (last_valid_temperature+VALID_TEMPERATURE_THRESHOLD_DIFF_DEG) || \
+                 temperature < (last_valid_temperature-VALID_TEMPERATURE_THRESHOLD_DIFF_DEG))
+        {
+            last_invalid_temperature_counter++;
+            err = TEMP_CTRL_TEMP_INVALID;
+        }
+        else
+        {
+            last_invalid_temperature_counter = 0;
+            last_valid_temperature = temperature;
+        }
+    }
+
+    if (last_invalid_temperature_counter >= INVALID_TEMPERATURE_ERROR_NUM)
+    {
+        return err;
+    }
+
+    return TEMP_CTRL_NOERR;
 }
 
 //------------------------------------------------------------------------------

@@ -274,8 +274,8 @@ void App::check_temp_ctrl(bool show_temp)
             case TempController::TempCtrlError::TEMP_CTRL_NOERR:
                 if (show_temp)
                 {
-                    debug_if(DEBUG_ON, "APP: LAST furnance temperature: %3.1f [C]\r\n", tctrl.get_last_temperature());
-                    disp.print_temperature(tctrl.get_last_temperature());
+                    debug_if(DEBUG_ON, "APP: LAST furnance temperature: %3.1f [C]\r\n", tctrl.get_last_valid_temperature());
+                    disp.print_temperature(tctrl.get_last_valid_temperature());
                 }
                 break;
 

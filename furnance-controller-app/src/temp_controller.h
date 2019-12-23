@@ -15,12 +15,12 @@ public:
         int temp_relay_off;
     } TempCtrlSettings;
 
-
     typedef enum
     {
         TEMP_CTRL_NOERR = 0,
         TEMP_CTRL_TEMP_TOO_LOW,
         TEMP_CTRL_TEMP_TOO_HIGH,
+        TEMP_CTRL_TEMP_INVALID,
         TEMP_CTRL_NO_SENSOR,
     } TempCtrlError;
 
@@ -34,7 +34,7 @@ public:
 public:
     explicit TempController(const TempCtrlSettings& temp_thresh);
     TempCtrlError get_temperature(float& temperature);
-    float get_last_temperature() const;
+    float get_last_valid_temperature() const;
     TempCtrlRelayStatus get_relay_status() const;
     void update_temp_thresholds(const TempCtrlSettings& temp_thresh);
     TempCtrlError process();
@@ -42,6 +42,7 @@ public:
 private:
     bool is_sensor_available();
     void enable_relay(TempCtrlRelayStatus state);
+    TempCtrlError temperature_sensor_reader(float& last_temperature);
 
 private:
     //ds1820 temp_sensor;
@@ -51,7 +52,9 @@ private:
 
     DigitalOut relay_pin;
     TempCtrlRelayStatus relay_status;
-    float last_temperature;
+
+    float last_valid_temperature;
+    int last_invalid_temperature_counter;
 
 };
 
