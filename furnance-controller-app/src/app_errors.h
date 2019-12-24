@@ -20,6 +20,7 @@ static const char* app_errors[AppError::APP_ERROR_LAST] =
     "ERR2",
     "ERR3",
     "ERR4",
+    "ERR5",
 };
 
 #endif // __APP_ERRORS_H__

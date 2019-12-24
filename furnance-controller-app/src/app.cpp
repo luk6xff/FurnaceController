@@ -156,9 +156,6 @@ int App::main_app()
             check_temp_ctrl(true);
         }
 
-
-
-
         if (get_error() != APP_ERROR_NO_ERROR)
         {
             return 2;
@@ -234,6 +231,7 @@ void App::error_handler()
     // Display last error
     debug_if(DEBUG_ON, "APP: APP_ERROR: %s\r\n", app_errors[get_error()]);
     disp.print_error(get_error());
+    wait_us(1000000);
     set_error(AppError::APP_ERROR_NO_ERROR);
 }
 

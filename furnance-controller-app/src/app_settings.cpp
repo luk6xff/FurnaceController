@@ -25,11 +25,11 @@ AppSettings::AppSettings()
     default_settings =
     {
         .magic = 0x4C554B36,  // LUK6
-        .version = 0x00000002,
+        .version = 0x00000003,
         .temp =
         {
             .temp_min = 5,
-            .temp_max = 90,
+            .temp_max = 80,
             .temp_relay_on = 30,
             .temp_relay_off = 28,
             .temp_diff_valid = 20,

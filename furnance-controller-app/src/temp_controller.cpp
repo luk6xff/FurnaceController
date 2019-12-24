@@ -50,7 +50,6 @@ TempController::TempCtrlError TempController::process()
         return status;
     }
 
-
     // Update relay status
     if (last_valid_temperature >= temp_thresholds.temp_relay_on)
     {
@@ -118,7 +117,7 @@ TempController::TempCtrlError TempController::temperature_sensor_reader(float& l
     else
     {
         // Measure temperature
-        ds1820_convert_temperature(THIS);
+        ds1820_convert_temperature(ALL);
         temperature = ds1820_read_temperature(CELSIUS);
         last_temperature = temperature;
 
@@ -133,8 +132,8 @@ TempController::TempCtrlError TempController::temperature_sensor_reader(float& l
             err = TEMP_CTRL_TEMP_TOO_HIGH;
         }
         else if (((int)last_valid_temperature != -1) && \
-                 temperature > (last_valid_temperature+temp_thresholds.temp_diff_valid) || \
-                 temperature < (last_valid_temperature-temp_thresholds.temp_diff_valid))
+                 ((temperature > (last_valid_temperature+temp_thresholds.temp_diff_valid)) || \
+                 (temperature < (last_valid_temperature-temp_thresholds.temp_diff_valid))))
         {
             last_invalid_temperature_counter++;
             err = TEMP_CTRL_TEMP_INVALID;
