@@ -1,8 +1,8 @@
 # FurnaceController
 Simple pump controller project for wood and coal fired furnance.
 
-[img1]: ./docs/photos/p1.jpg "Image 1"
-[img2]: ./docs/photos/p2.jpg "Image 2"
+[img1]: docs/photos/p1.jpg "Image 1"
+[img2]: docs/photos/p2.jpg "Image 2"
 
 
 ## Parts used
@@ -14,5 +14,11 @@ Simple pump controller project for wood and coal fired furnance.
 * [Relay](http://electropark.pl/moduly-wejsc-wyjsc/3083-modul-1-przekaznika-5v.html)
 * [Tact Switch](http://electropark.pl/tact-switch/81-tact-switch-6x6x14mm-czarny.html)
 
-## SW
+## Hardware
+Hardware connection pinout to be found at [hw_config.h](furnance-controller-app/src/hw_config.h)
+
+HW device schematic:
+[schematic]: docs/photos/furnance_controller_bb.png "Schematic"
+
+## Software
 Software part related README to be found [here](furnance-controller-app/README.md)
