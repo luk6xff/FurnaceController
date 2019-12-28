@@ -1,10 +1,8 @@
 # FurnaceController
 Simple pump controller project for wood and coal fired furnance.
 
-![img1]
-(docs/photos/p1.jpg)
-![img2]
-(docs/photos/p2.jpg)
+![img1](docs/photos/p1.jpg)
+![img2](docs/photos/p2.jpg)
 
 
 ## Parts used
