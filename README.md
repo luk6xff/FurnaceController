@@ -1,8 +1,10 @@
 # FurnaceController
 Simple pump controller project for wood and coal fired furnance.
 
-[img1]: docs/photos/p1.jpg "Image 1"
-[img2]: docs/photos/p2.jpg "Image 2"
+![img1]
+(docs/photos/p1.jpg)
+![img2]
+(docs/photos/p2.jpg)
 
 
 ## Parts used
@@ -18,7 +20,8 @@ Simple pump controller project for wood and coal fired furnance.
 Hardware connection pinout to be found at [hw_config.h](furnance-controller-app/src/hw_config.h)
 
 HW device schematic:
-[schematic]: docs/photos/furnance_controller_bb.png "Schematic"
+![schematic]
+(docs/photos/furnance_controller_bb.png)
 
 ## Software
 Software part related README to be found [here](furnance-controller-app/README.md)
