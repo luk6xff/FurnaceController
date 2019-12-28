@@ -1,6 +1,8 @@
 # Furnace Controller platformio-mbed app
 Simple pump controller for wood, coal fired furnance.
 
+[img1]: ./../docs/photos/p1.jpg "Image 1"
+[img2]: ./../docs/photos/p2.jpg "Image 2"
 ![alt text](https://raw.githubusercontent.com/luk6xff/FurnanceController/master/docs/photos/p1.jpg)
 ![alt text](https://raw.githubusercontent.com/luk6xff/FurnanceController/master/docs/photos/p2.jpg)
 
