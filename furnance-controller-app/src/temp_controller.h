@@ -2,6 +2,7 @@
 #define __TEMP_CONTROLLER_H__
 
 #include "../lib/DS1820/platform/mbed/ds1820-mbed.h"
+#include "app_status.h"
 
 class TempController
 {
@@ -19,15 +20,6 @@ public:
 
     typedef enum
     {
-        TEMP_CTRL_NOERR = 0,
-        TEMP_CTRL_TEMP_TOO_LOW,
-        TEMP_CTRL_TEMP_TOO_HIGH,
-        TEMP_CTRL_TEMP_INVALID,
-        TEMP_CTRL_NO_SENSOR,
-    } TempCtrlError;
-
-    typedef enum
-    {
         TEMP_CTRL_RELAY_OFF = 0,
         TEMP_CTRL_RELAY_ON,
     } TempCtrlRelayStatus;
@@ -35,23 +27,20 @@ public:
 
 public:
     explicit TempController(const TempCtrlSettings& temp_thresh);
-    TempCtrlError get_temperature(float& temperature);
+    AppStatus get_temperature(float& temperature);
     float get_last_valid_temperature() const;
     TempCtrlRelayStatus get_relay_status() const;
     void update_temp_thresholds(const TempCtrlSettings& temp_thresh);
-    TempCtrlError process();
+    AppStatus process();
 
 private:
-    bool is_sensor_available();
     void enable_relay(TempCtrlRelayStatus state);
-    TempCtrlError temperature_sensor_reader(float& last_temperature);
 
 private:
-    //ds1820 temp_sensor;
-    int ds1820_sensors_found;
-    const int ds1820_sensors_num;
-    TempCtrlSettings temp_thresholds;
+    ds1820 ds18b20_dev;
+    ds1820_mbed ds18b20_mbed_dev;
 
+    TempCtrlSettings temp_thresholds;
     DigitalOut relay_pin;
     TempCtrlRelayStatus relay_status;
 

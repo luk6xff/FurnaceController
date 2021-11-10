@@ -2,7 +2,6 @@
 #define __DISPLAY_H__
 
 #include "../lib/TM1637/platform/mbed/tm1637-mbed.h"
-#include "app_errors.h"
 
 class Display
 {
@@ -17,7 +16,6 @@ public:
     void print_str(const char* str, size_t str_len, bool clear_on=false);
     void print_temperature(float temp, uint8_t brightness=TM1637_BRT6, bool clear_on=false);
     void print_time(uint8_t hour, uint8_t min, bool blink = false, uint8_t brightness=TM1637_BRT3);
-    void print_error(AppError error);
 
 private:
     tm1637 disp;

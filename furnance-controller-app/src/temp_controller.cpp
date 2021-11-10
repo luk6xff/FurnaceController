@@ -5,31 +5,71 @@
 
 //------------------------------------------------------------------------------
 TempController::TempController(const TempCtrlSettings& temp_thresh)
-    : ds1820_sensors_num(DS18B20_SENSORS_NUM)
-    , temp_thresholds(temp_thresh)
+    : temp_thresholds(temp_thresh)
     , relay_pin(RELAY_PIN)
     , relay_status(TEMP_CTRL_RELAY_OFF)
     , last_valid_temperature(-1)
     , last_invalid_temperature_counter(0)
 {
     // DS18B20
-    ds1820_mbed_init(DS18B20_DATA_PIN, NC);
-    // Initialize global state variables
-    ds1820_search_rom_setup();
-    // Search for new device
-    while (ds1820_search_rom() && ds1820_sensors_found < ds1820_sensors_num)
-    {
-        ds1820_sensors_found++;
-    }
+    ds18b20_mbed_dev.data_pin = new DigitalInOut(DS18B20_DATA_PIN);
+    ds18b20_mbed_dev.parasite_pin = nullptr;
+    ds18b20_dev.sensors_num = DS18B20_SENSORS_NUM;
+    ds1820_mbed_init(&ds18b20_dev, &ds18b20_mbed_dev);
 
     // RELAY_OFF- always start from disabled state
     relay_pin = 1;
 }
 
 //------------------------------------------------------------------------------
-TempController::TempCtrlError TempController::get_temperature(float& temperature)
+AppStatus TempController::get_temperature(float& temperature)
 {
-    return temperature_sensor_reader(temperature);
+    AppStatus err = STATUS_NO_ERROR;
+    float t = 0.0f;
+
+    // Is sensor available
+    if (!ds1820_read_power_supply(&ds18b20_dev, THIS))
+    {
+        last_invalid_temperature_counter++;
+        err = STATUS_NO_TEMP_SENSOR;
+    }
+    else
+    {
+        // Measure temperature
+        ds1820_convert_temperature(&ds18b20_dev, THIS);
+        t = ds1820_read_temperature(&ds18b20_dev, CELSIUS);
+        temperature = t;
+
+        if (t <= temp_thresholds.temp_min)
+        {
+            last_invalid_temperature_counter++;
+            err = STATUS_TOO_LOW_TEMP;
+        }
+        else if (t >= temp_thresholds.temp_max)
+        {
+            last_invalid_temperature_counter++;
+            err = STATUS_TOO_HIGH_TEMP;
+        }
+        else if (((int)last_valid_temperature != -1) && \
+                 ((t > (last_valid_temperature+temp_thresholds.temp_diff_valid)) || \
+                 (t < (last_valid_temperature-temp_thresholds.temp_diff_valid))))
+        {
+            last_invalid_temperature_counter++;
+            err = STATUS_INVALID_TEMP;
+        }
+        else
+        {
+            last_invalid_temperature_counter = 0;
+            last_valid_temperature = temperature;
+        }
+    }
+
+    if (last_invalid_temperature_counter >= temp_thresholds.num_of_invalid_measurements_to_err)
+    {
+        return err;
+    }
+
+    return STATUS_NO_ERROR;
 }
 
 
@@ -40,11 +80,11 @@ float TempController::get_last_valid_temperature() const
 }
 
 //------------------------------------------------------------------------------
-TempController::TempCtrlError TempController::process()
+AppStatus TempController::process()
 {
     float read_temperature;
-    TempCtrlError status = get_temperature(read_temperature);
-    if (status != TEMP_CTRL_NOERR)
+    AppStatus status = get_temperature(read_temperature);
+    if (status != STATUS_NO_ERROR)
     {
         debug_if(DEBUG_ON, "TEMP_CONTROLLER: get_temperature failed, STATUS: %d\r\n", status);
         return status;
@@ -76,12 +116,6 @@ void TempController::update_temp_thresholds(const TempCtrlSettings& temp_thresh)
 }
 
 //------------------------------------------------------------------------------
-bool TempController::is_sensor_available()
-{
-    return ds1820_read_power_supply(THIS);
-}
-
-//------------------------------------------------------------------------------
 void TempController::enable_relay(TempCtrlRelayStatus state)
 {
     if (relay_status == state)
@@ -101,56 +135,6 @@ void TempController::enable_relay(TempCtrlRelayStatus state)
     }
 
     relay_status = state;
-}
-
-//------------------------------------------------------------------------------
-TempController::TempCtrlError TempController::temperature_sensor_reader(float& last_temperature)
-{
-    TempCtrlError err = TEMP_CTRL_NOERR;
-    float temperature = 0.0f;
-
-    if (!is_sensor_available())
-    {
-        last_invalid_temperature_counter++;
-        err = TEMP_CTRL_NO_SENSOR;
-    }
-    else
-    {
-        // Measure temperature
-        ds1820_convert_temperature(ALL);
-        temperature = ds1820_read_temperature(CELSIUS);
-        last_temperature = temperature;
-
-        if (temperature <= temp_thresholds.temp_min)
-        {
-            last_invalid_temperature_counter++;
-            err = TEMP_CTRL_TEMP_TOO_LOW;
-        }
-        else if (temperature >= temp_thresholds.temp_max)
-        {
-            last_invalid_temperature_counter++;
-            err = TEMP_CTRL_TEMP_TOO_HIGH;
-        }
-        else if (((int)last_valid_temperature != -1) && \
-                 ((temperature > (last_valid_temperature+temp_thresholds.temp_diff_valid)) || \
-                 (temperature < (last_valid_temperature-temp_thresholds.temp_diff_valid))))
-        {
-            last_invalid_temperature_counter++;
-            err = TEMP_CTRL_TEMP_INVALID;
-        }
-        else
-        {
-            last_invalid_temperature_counter = 0;
-            last_valid_temperature = temperature;
-        }
-    }
-
-    if (last_invalid_temperature_counter >= temp_thresholds.num_of_invalid_measurements_to_err)
-    {
-        return err;
-    }
-
-    return TEMP_CTRL_NOERR;
 }
 
 //------------------------------------------------------------------------------

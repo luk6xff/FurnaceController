@@ -9,8 +9,9 @@
 
 
 //------------------------------------------------------------------------------
-AppSettings::AppSettings()
-    : at24c32_i2c(AT24CXX_SDA, AT24CXX_SCL)
+AppSettings::AppSettings(Timer& timer)
+    : t(timer)
+    , at24c32_i2c(AT24CXX_SDA, AT24CXX_SCL)
     , at24c32_wp(AT24CXX_WP)
     , at24c32_mbed{&at24c32_i2c, &at24c32_wp}
 {
@@ -19,6 +20,7 @@ AppSettings::AppSettings()
         .type = AT24C32,
         .addr = AT24CXX_I2C_ADDR,
     };
+
     at24cxx_mbed_init(&at24c32, &at24c32_mbed);
 
     // Modify according to your application
@@ -36,14 +38,6 @@ AppSettings::AppSettings()
             .num_of_invalid_measurements_to_err = 10,
         },
     };
-}
-
-
-//------------------------------------------------------------------------------
-AppSettings&  AppSettings::instance()
-{
-    static AppSettings settings;
-    return settings;
 }
 
 //------------------------------------------------------------------------------
@@ -145,8 +139,6 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
     }
     disp.print_time(time.hours, time.minutes, true, true);
     // Set timeout
-    Timer t;
-    t.start();
     uint32_t start = t.read();
     while ((t.read()-start) < settings_timeout_s)
     {
@@ -241,7 +233,6 @@ bool AppSettings::set_date_time(Buttons& btns, Display& disp)
 bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
 {
     TempController::TempCtrlSettings temps = get_current().temp;
-    Timer t;
     bool is_temp_set = false;
     enum SettingsType
     {
@@ -256,7 +247,6 @@ bool AppSettings::set_temperatures(Buttons& btns, Display& disp)
     const char* menu[LAST] = {"T_ON", "TOFF", "TMIN", "TMAX", "TDIF", "NinM"};
     SettingsType curr_set = TEMP_RELAY_ON;
 
-    t.start();
     uint32_t start = t.read();
     while ((t.read()-start) < settings_timeout_s)
     {

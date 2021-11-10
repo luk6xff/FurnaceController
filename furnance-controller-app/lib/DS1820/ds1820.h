@@ -22,13 +22,50 @@ typedef enum
 {
     THIS,   // Command applies to only this device
     ALL     // Command applies to all devices
-} DS1820_Devices_t;
+} ds1820_devices;
 
 typedef enum
 {
     CELSIUS,     // Celsius degre
     FAHRENHEIT   // Fahrenheit degree
-} DS1820_Scale_t;
+} ds1820_scale;
+
+/**
+ * @brief DS1820 dev object
+ */
+typedef struct
+{
+
+    /**
+     * @brief Number of sensors on the bus
+     */
+    size_t sensors_num;
+
+    /**
+     * @brief ROM is a copy of the internal DS1820's ROM
+     *        It is created during the ds1820_search_rom() or ds1820_search_alarm() commands
+     *
+     *        ds1820_rom[0] is the Dallas Family Code
+     *        ds1820_rom[1] thru ds1820_rom[6] is the 48-bit unique serial number
+     *        ds1820_rom[7] is the device CRC
+    */
+    uint8_t rom[8];
+
+    /**
+     * @brief RAM is a copy of the internal DS1820's RAM
+     *        It's updated during the ds1820_read_ram() command
+     *        which is automaticaly called from any function
+     *        using the RAM values.
+     */
+    uint8_t ram[9];
+
+    bool done_flag;
+    int  last_descrepancy;
+    uint8_t search_ds1820_rom[8];
+    bool parasite_power;
+    void* platform_dev;
+} ds1820;
+
 
 
 
@@ -38,22 +75,23 @@ typedef enum
 /**
  * @brief This function initializes sensor state
  *
- * @param[in] parasite_powered - if device parsite-powered
+ * @param[in] parasite_powered - If device parsite-powered
+ * @param[in] sensors_num - Number of sensors on the bus
  */
-void ds1820_init(bool parasite_powered);
+void ds1820_init(ds1820 *const dev, bool parasite_powered);
 
 /**
  * @brief This function copies the DS1820's RAM into the object's
  *        RAM[].
  */
-void ds1820_read_ram(void);
+void ds1820_read_ram(ds1820 *const dev);
 
 /**
  * @brief This routine initializes the global variables used in
  *        the ds1820_search_rom() and ds1820_search_alarm() funtions. It should
  *        be called once before looping to find devices.
  */
-void ds1820_search_rom_setup(void);
+void ds1820_search_rom_setup(ds1820 *const dev);
 
 /**
  * @brief This routine will search for an unidentified device
@@ -62,7 +100,7 @@ void ds1820_search_rom_setup(void);
  *        It will return FALSE if there were no new devices
  *        discovered on the bus.
  */
-bool ds1820_search_rom(void);
+bool ds1820_search_rom(ds1820 *const dev);
 
 /**
  * @brief This routine will search for an unidentified device
@@ -71,7 +109,7 @@ bool ds1820_search_rom(void);
  *        ROM address found. It will return FALSE if there were
  *        no new devices with alarms discovered on the bus.
  */
-bool ds1820_search_alarm(void);
+bool ds1820_search_alarm(ds1820 *const dev);
 
 /**
  * @brief This routine will read the ROM (Family code, serial number
@@ -83,7 +121,7 @@ bool ds1820_search_alarm(void);
  *       collision will occur when all the DS1820s attempt to
  *       respond at the same time.
  */
-void ds1820_read_rom(void);
+void ds1820_read_rom(ds1820 *const dev);
 
 /**
  * @brief This routine will initiate the temperature conversion within
@@ -96,7 +134,7 @@ void ds1820_read_rom(void);
  * @param allows the fnction to apply to a specific device or
  *        to all devices on the 1-Wire bus.
  */
-void ds1820_convert_temperature(DS1820_Devices_t device);
+void ds1820_convert_temperature(ds1820 *const dev, ds1820_devices device);
 
 /**
  * @brief This function will return the sensor temperature. This function
@@ -108,7 +146,7 @@ void ds1820_convert_temperature(DS1820_Devices_t device);
  * @param scale, may be either CELSIUS or FAHRENHEIT
  * @returns temperature for that scale
  */
-float ds1820_read_temperature(DS1820_Scale_t scale);
+float ds1820_read_temperature(ds1820 *const dev, ds1820_scale scale);
 
 /**
  * @brief This function calculates the ROM checksum and compares it to the
@@ -116,7 +154,7 @@ float ds1820_read_temperature(DS1820_Scale_t scale);
  *
  * @returns true if the checksum matches, otherwise false.
  */
-bool ds1820_rom_checksum_error(void);
+bool ds1820_rom_checksum_error(ds1820 *const dev);
 
 /**
  * @brief This function calculates the RAM checksum and compares it to the
@@ -124,7 +162,7 @@ bool ds1820_rom_checksum_error(void);
  *
  * @returns true if the checksum matches, otherwise false.
  */
-bool ds1820_ram_checksum_error(void);
+bool ds1820_ram_checksum_error(ds1820 *const dev);
 
 /**
  * @brief This function sets the temperature resolution for the DS18B20
@@ -133,7 +171,7 @@ bool ds1820_ram_checksum_error(void);
  * @param a number between 9 and 12 to specify the resolution
  * @returns true if successful
  */
-bool ds1820_set_configuration_bits(unsigned int resolution);
+bool ds1820_set_configuration_bits(ds1820 *const dev, unsigned int resolution);
 
 /**
  * @brief This function returns the values stored in the temperature
@@ -141,7 +179,7 @@ bool ds1820_set_configuration_bits(unsigned int resolution);
  *
  * @returns a 16 bit integer of TH (upper byte) and TL (lower byte).
  */
-int ds1820_read_scratchpad(void);
+int ds1820_read_scratchpad(ds1820 *const dev);
 
 /**
  * @brief This function will store the passed data into the DS1820's RAM.
@@ -150,7 +188,7 @@ int ds1820_read_scratchpad(void);
  *
  * @param a 16 bit integer of TH (upper byte) and TL (lower byte).
  */
-void ds1820_write_scratchpad(int data);
+void ds1820_write_scratchpad(ds1820 *const dev, int data);
 
 /**
  * @brief This function will transfer the TH and TL registers from the
@@ -161,7 +199,7 @@ void ds1820_write_scratchpad(int data);
  * @param allows the fnction to apply to a specific device or
  *        to all devices on the 1-Wire bus.
  */
-void ds1820_store_scratchpad(DS1820_Devices_t device);
+void ds1820_store_scratchpad(ds1820 *const dev, ds1820_devices device);
 
 /**
  * @brief This function will copy the stored values from the EEPROM
@@ -170,7 +208,7 @@ void ds1820_store_scratchpad(DS1820_Devices_t device);
  * @param allows the function to apply to a specific device or
  *        to all devices on the 1-Wire bus.
  */
-int ds1820_recall_scratchpad(DS1820_Devices_t device);
+int ds1820_recall_scratchpad(ds1820 *const dev, ds1820_devices device);
 
 /**
  * @brief This function will return the type of power supply for
@@ -180,24 +218,24 @@ int ds1820_recall_scratchpad(DS1820_Devices_t device);
  * @returns true if the device (or all devices) are Vcc powered,
  *          returns false if the device (or ANY device) is parasite powered.
  */
-bool ds1820_read_power_supply(DS1820_Devices_t device);
+bool ds1820_read_power_supply(ds1820 *const dev, ds1820_devices device);
 
 
 
 //-----------------------------------------------------------------------------
 // @brief HW DEPENDENT FUNCTIONS - must be defined for each platform
 //-----------------------------------------------------------------------------
-extern bool ds1820_onewire_reset(void);
-extern void ds1820_onewire_bit_out(bool bit_data);
-extern bool ds1820_onewire_bit_in(void);
-extern void ds1820_delay_us(uint32_t us);
+extern bool ds1820_onewire_reset(ds1820 *const dev);
+extern void ds1820_onewire_bit_out(ds1820 *const dev, bool bit_data);
+extern bool ds1820_onewire_bit_in(ds1820 *const dev);
 /**
  * @brief Enable/Disable power parasite pin.
  *
  * @param enable  Set ot HIGH if true, LOW otherwise.
  */
-extern void ds1820_set_parasite_pin(bool enable);
+extern void ds1820_set_parasite_pin(ds1820 *const dev, bool enable);
 
+extern void ds1820_delay_us(uint32_t us);
 
 #ifdef __cplusplus
 }

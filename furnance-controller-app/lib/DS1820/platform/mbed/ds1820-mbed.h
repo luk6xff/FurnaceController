@@ -59,9 +59,16 @@
  *   @endcode
  */
 
-void ds1820_mbed_init(PinName data_pin, PinName parasite_pin);
+/** DS1820 mbed specific dev object **/
+typedef struct
+{
+    DigitalInOut *data_pin;
+    DigitalOut   *parasite_pin;
+} ds1820_mbed;
 
-void ds1820_mbed_deinit();
+
+void ds1820_mbed_init(ds1820 *const dev, ds1820_mbed *const mbed_dev);
+
 
 #endif // __DS1820_MBED_H__
 

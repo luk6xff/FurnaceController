@@ -25,7 +25,7 @@ typedef struct
 } Settings;
 
 public:
-    static AppSettings& instance();
+    explicit AppSettings(Timer& timer);
     void init();
 
     const Settings& get_defaults();
@@ -42,7 +42,7 @@ private:
     void print_current_settings();
 
 private:
-    AppSettings();
+    Timer& t;
     Settings default_settings;
     Settings current_settings;
 

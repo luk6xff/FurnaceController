@@ -6,7 +6,7 @@
 #include "display.h"
 #include "temp_controller.h"
 #include "app_settings.h"
-#include "app_errors.h"
+#include "app_status.h"
 
 
 class App
@@ -28,8 +28,8 @@ private:
     App();
     // State methods
     void init();
-    int main_app();
-    int settings_menu();
+    AppState main_app();
+    void settings_menu();
     void error_handler();
 
     // Event handlers
@@ -40,12 +40,13 @@ private:
     void check_temp_ctrl(bool show_temp=true);
     void check_time(bool show_time=true);
     void check_indoor_temperature();
-    void set_error(AppError err);
-    AppError get_error() const;
+    void set_status(AppStatus err);
+    AppStatus get_status() const;
 
 private:
     AppState current_state;
-    AppError current_error;
+    AppStatus current_status;
+    AppSettings settings;
     Display disp;
     Buttons btns;
     TempController tctrl;

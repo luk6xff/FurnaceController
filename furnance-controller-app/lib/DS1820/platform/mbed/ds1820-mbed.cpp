@@ -8,50 +8,30 @@
 
 #include "ds1820-mbed.h"
 
-/**
- * DS1820 pins
- */
-DigitalInOut* _data_pin;
-DigitalOut* _parasite_pin;
-
 //------------------------------------------------------------------------------
-void ds1820_mbed_init(PinName data_pin, PinName parasite_pin)
+void ds1820_mbed_init(ds1820 *const dev, ds1820_mbed *const mbed_dev)
 {
-    _data_pin = new DigitalInOut(data_pin);
-    _parasite_pin = new DigitalOut(parasite_pin);
-    if (parasite_pin == NC)
+    dev->platform_dev = mbed_dev;
+    if (mbed_dev->parasite_pin == nullptr)
     {
-        ds1820_init(false);
+        ds1820_init(dev, false);
         return;
     }
-    ds1820_init(true);
+    ds1820_init(dev, true);
 }
 
 //------------------------------------------------------------------------------
-void ds1820_mbed_deinit(void)
+bool ds1820_onewire_reset(ds1820 *const dev)
 {
-    // IO
-    delete(_data_pin);
-    delete(_parasite_pin);
-}
-
-//------------------------------------------------------------------------------
-void ds1820_delay_us(uint32_t us)
-{
-    wait_us(us);
-}
-
-//------------------------------------------------------------------------------
-bool ds1820_onewire_reset(void)
-{
+    ds1820_mbed *const pd = (ds1820_mbed*)dev->platform_dev;
     // This will return false if no devices are present on the data bus
     bool presence = false;
-    _data_pin->output();
-    *_data_pin = 0;           // bring low for 500 us
+    pd->data_pin->output();
+    *(pd->data_pin) = 0;           // bring low for 500 us
     ds1820_delay_us(500);
-    _data_pin->input();       // let the data line float high
+    pd->data_pin->input();       // let the data line float high
     ds1820_delay_us(90);            // wait 90us
-    if (_data_pin->read() == 0) // see if any devices are pulling the data line low
+    if (pd->data_pin->read() == 0) // see if any devices are pulling the data line low
     {
         presence = true;
     }
@@ -60,47 +40,55 @@ bool ds1820_onewire_reset(void)
 }
 
 //------------------------------------------------------------------------------
-void ds1820_onewire_bit_out(bool bit_data)
+void ds1820_onewire_bit_out(ds1820 *const dev, bool bit_data)
 {
-    _data_pin->output();
-    *_data_pin = 0;
+    ds1820_mbed *const pd = (ds1820_mbed*)dev->platform_dev;
+    pd->data_pin->output();
+    *(pd->data_pin) = 0;
     ds1820_delay_us(5);
     if (bit_data)
     {
-        _data_pin->input();    // bring data line high
+        pd->data_pin->input();    // bring data line high
         ds1820_delay_us(55);
     }
     else
     {
         ds1820_delay_us(55); // keep data line low
-        _data_pin->input();
+        pd->data_pin->input();
     }
 }
 
 //------------------------------------------------------------------------------
-bool ds1820_onewire_bit_in(void)
+bool ds1820_onewire_bit_in(ds1820 *const dev)
 {
+    ds1820_mbed *const pd = (ds1820_mbed*)dev->platform_dev;
     bool answer;
-    _data_pin->output();
-    *_data_pin = 0;
+    pd->data_pin->output();
+    *(pd->data_pin) = 0;
     ds1820_delay_us(5);
-    _data_pin->input();
+    pd->data_pin->input();
     ds1820_delay_us(5);
-    answer = _data_pin->read();
+    answer = pd->data_pin->read();
     ds1820_delay_us(50);
     return answer;
 }
 
 //------------------------------------------------------------------------------
-void ds1820_set_parasite_pin(bool enable)
+void ds1820_set_parasite_pin(ds1820 *const dev, bool enable)
 {
+    ds1820_mbed *const pd = (ds1820_mbed*)dev->platform_dev;
     if (enable)
     {
-        *_parasite_pin = 1;
+        *(pd->parasite_pin) = 1;
         return;
     }
-    *_parasite_pin = 0;
+    *(pd->parasite_pin) = 0;
+}
+
+//------------------------------------------------------------------------------
+void ds1820_delay_us(uint32_t us)
+{
+    wait_us(us);
 }
 
 //-----------------------------------------------------------------------------
-

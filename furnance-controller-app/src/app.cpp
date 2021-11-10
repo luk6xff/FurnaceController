@@ -1,7 +1,7 @@
 #include "app.h"
 #include "mbed.h"
 
-#define DEBUG_ON 0
+#define DEBUG_ON 1
 
 //------------------------------------------------------------------------------
 #define OPTIONAL_PARAM_TIMEOUT_S      5 // [s]
@@ -21,8 +21,9 @@ App &App::instance()
 //------------------------------------------------------------------------------
 App::App()
     : current_state(Init)
-    , current_error(APP_ERROR_NO_ERROR)
-    , tctrl(AppSettings::instance().get_defaults().temp)
+    , current_status(STATUS_NO_ERROR)
+    , settings(app_timer)
+    , tctrl(settings.get_defaults().temp)
     , watchdog(Watchdog::get_instance())
 {
     debug_if(DEBUG_ON, "APP: --- Hello from furnance controller app! ---\r\n");
@@ -44,17 +45,7 @@ void App::run()
 
             case MainApp:
             {
-                int res = main_app();
-                if (res == 1)
-                {
-                    debug_if(DEBUG_ON, "APP: Settings menu chosen\r\n");
-                    current_state = Settings;
-                }
-                else if (res == 2)
-                {
-                    debug_if(DEBUG_ON, "APP: Error occured: ERR=[%d]\r\n", (int)get_error());
-                    current_state = Error;
-                }
+                current_state = main_app();
                 break;
             }
 
@@ -81,7 +72,6 @@ void App::run()
 //------------------------------------------------------------------------------
 void App::init()
 {
-    debug_if(DEBUG_ON, "APP: --- Hello from INIT ---\r\n");
     // Configure Watchdog
     watchdog.start(WATCHDOG_TIMEOUT_MS);
     watchdog_ticker.attach(mbed::callback(this, &App::ev_kick_watchdog),
@@ -90,14 +80,12 @@ void App::init()
     app_timer.start();
 
     // Configure EEPROM Settings
-    AppSettings::instance().init();
+    settings.init();
 }
 
 //------------------------------------------------------------------------------
-int App::main_app()
+App::AppState App::main_app()
 {
-    debug_if(DEBUG_ON, "APP: --- MAIN_APP ---\r\n");
-
     update_param_ticker.attach(mbed::callback(this, &App::ev_update_param),
                                              UPDATE_PARAM_TICKER_PERIOD_S);
 
@@ -109,13 +97,11 @@ int App::main_app()
 
         if (ok_state == ButtonState::BtnHold_1s)
         {
-            debug_if(DEBUG_ON, "APP: ButtonType::BtnOk pressed\r\n");
-            return 1;
+            return App::AppState::Settings;
         }
 
         else if (up_state == ButtonState::BtnPressed)
         {
-            debug_if(DEBUG_ON, "APP: ButtonType::BtnUp pressed - Show time\r\n");
             uint32_t start = app_timer.read();
             while ((app_timer.read()-start) < OPTIONAL_PARAM_TIMEOUT_S)
             {
@@ -134,7 +120,6 @@ int App::main_app()
 
         else if (down_state == ButtonState::BtnPressed)
         {
-            debug_if(DEBUG_ON, "APP: ButtonType::BtnDown pressed - Show indoor temperature\r\n");
             uint32_t start = app_timer.read();
             while ((app_timer.read()-start) < OPTIONAL_PARAM_TIMEOUT_S)
             {
@@ -156,18 +141,18 @@ int App::main_app()
             check_temp_ctrl(true);
         }
 
-        if (get_error() != APP_ERROR_NO_ERROR)
+        if (get_status() != STATUS_NO_ERROR)
         {
-            return 2;
+            return App::AppState::Error;
         }
     }
-    return 0;
+
+    return App::AppState::MainApp;
 }
 
 //------------------------------------------------------------------------------
-int App::settings_menu()
+void App::settings_menu()
 {
-    debug("APP: --- Hello from SETTINGS ---\r\n");
     enum SettingsType
     {
         TEMPERATURE = 0,
@@ -189,21 +174,19 @@ int App::settings_menu()
         if (ok_state == ButtonState::BtnPressed)
         {
             start = app_timer.read();
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnOk pressed\r\n");
             if (current_settings == TEMPERATURE)
             {
-                AppSettings::instance().set_temperatures(btns, disp);
+                settings.set_temperatures(btns, disp);
             }
             else if (current_settings == TIME)
             {
-                AppSettings::instance().set_date_time(btns, disp);
+                settings.set_date_time(btns, disp);
             }
-            return 1;
+            return;
         }
         else if (down_state == ButtonState::BtnPressed)
         {
             start = app_timer.read();
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnDown pressed\r\n");
             curr_set--;
             if (curr_set < 0)
             {
@@ -213,7 +196,6 @@ int App::settings_menu()
         else if (up_state == ButtonState::BtnPressed)
         {
             start = app_timer.read();
-            debug_if(DEBUG_ON, "APP: Buttons::ButtonType::BtnUp pressed\r\n");
             curr_set = (curr_set+1) % (int)LAST;
         }
 
@@ -222,17 +204,16 @@ int App::settings_menu()
             break;
         }
     }
-    return 0;
 }
 
 //------------------------------------------------------------------------------
 void App::error_handler()
 {
     // Display last error
-    debug_if(DEBUG_ON, "APP: APP_ERROR: %s\r\n", app_errors[get_error()]);
-    disp.print_error(get_error());
+    debug_if(DEBUG_ON, "APP: APP_ERROR: %s\r\n", app_status[get_status()]);
+    disp.print_str(app_status[get_status()], 4);
     wait_us(1000000);
-    set_error(AppError::APP_ERROR_NO_ERROR);
+    set_status(AppStatus::STATUS_NO_ERROR);
 }
 
 //------------------------------------------------------------------------------
@@ -265,30 +246,13 @@ void App::check_temp_ctrl(bool show_temp)
     {
         debug_if(DEBUG_ON, "APP: update_temp_ctrl\r\n");
         // Update temperatures
-        tctrl.update_temp_thresholds(AppSettings::instance().get_current().temp);
-        TempController::TempCtrlError status = tctrl.process();
-        switch (status)
+        tctrl.update_temp_thresholds(settings.get_current().temp);
+        const AppStatus status = tctrl.process();
+        set_status(status);
+        if (status == AppStatus::STATUS_NO_ERROR && show_temp)
         {
-            case TempController::TempCtrlError::TEMP_CTRL_NOERR:
-                if (show_temp)
-                {
-                    debug_if(DEBUG_ON, "APP: LAST furnance temperature: %3.1f [C]\r\n", tctrl.get_last_valid_temperature());
-                    disp.print_temperature(tctrl.get_last_valid_temperature());
-                }
-                break;
-
-            case TempController::TempCtrlError::TEMP_CTRL_NO_SENSOR:
-                set_error(APP_ERROR_NO_TEMP_SENSOR);
-                break;
-
-            case TempController::TempCtrlError::TEMP_CTRL_TEMP_TOO_LOW:
-            case TempController::TempCtrlError::TEMP_CTRL_TEMP_TOO_HIGH:
-            case TempController::TempCtrlError::TEMP_CTRL_TEMP_INVALID:
-                set_error(APP_ERROR_INVALID_TEMP);
-                break;
-
-            default:
-                break;
+            debug_if(DEBUG_ON, "APP: LAST furnance temperature: %3.1f [C]\r\n", tctrl.get_last_valid_temperature());
+            disp.print_temperature(tctrl.get_last_valid_temperature());
         }
         update_temp_ctrl = false;
     }
@@ -305,12 +269,10 @@ void App::check_time(bool show_time)
         int ret = SystemRtc::instance().get_time(current_time);
         if (ret > 0)
         {
-            debug_if(DEBUG_ON, "APP: update_time - get_time error occured! ERR:%d\r\n", ret);
-            set_error(APP_ERROR_NO_RTC);
+            set_status(STATUS_NO_RTC);
         }
         else
         {
-            debug_if(DEBUG_ON, "APP: Current time: %s\r\n", SystemRtc::time_date_string(current_time));
             blink_on = blink_on^1;
             disp.print_time(current_time.hours, current_time.minutes, blink_on);
         }
@@ -327,15 +289,15 @@ void App::check_indoor_temperature()
 }
 
 //------------------------------------------------------------------------------
-void App::set_error(AppError err)
+void App::set_status(AppStatus err)
 {
-    current_error = err;
+    current_status = err;
 }
 
 //------------------------------------------------------------------------------
-AppError App::get_error() const
+AppStatus App::get_status() const
 {
-    return current_error;
+    return current_status;
 }
 
 //------------------------------------------------------------------------------
