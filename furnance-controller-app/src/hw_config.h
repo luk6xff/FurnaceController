@@ -30,6 +30,8 @@
 #define BTN_UP                  PA_15
 // RELAY
 #define RELAY_PIN               PA_9
+// DEBUG_UART_TX
+#define DEBUG_UART              PA_4
 
 
 #elif BOARD_MBED_DISCO_L476VG
