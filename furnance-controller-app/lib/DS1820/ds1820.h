@@ -76,7 +76,6 @@ typedef struct
  * @brief This function initializes sensor state
  *
  * @param[in] parasite_powered - If device parsite-powered
- * @param[in] sensors_num - Number of sensors on the bus
  */
 void ds1820_init(ds1820 *const dev, bool parasite_powered);
 

@@ -18,45 +18,30 @@
  *
  * Example:
  * @code
- *   #include "mbed.h"
+ *   #include "DS1820/platform/mbed/ds1820-mbed.h"
  *
  *   #define DS18B20_DATA_PIN PE_12
- *   const int MAX_SENSORS = 16;
+ *   #define DS18B20_SENSORS_NUM = 16;
  *   int main()
  *   {
  *       int i;
- *       int devices_found=0;
- *       ds1820_mbed_init(DS18B20_DATA_PIN, NC);
  *
- *       // Initialize global state variables
- *       ds1820_search_rom_setup();
+ *       ds1820 dev;
+ *       ds1820_mbed mbed_dev;
+ *       mbed_dev.data_pin = new DigitalInOut(DS18B20_DATA_PIN);
+ *       mbed_dev.parasite_pin = nullptr;
+ *       dev.sensors_num = DS18B20_SENSORS_NUM;
+ *       ds1820_mbed_init(&dev, &mbed_dev);
  *
- *       // Loop to find all devices on the data line
- *       while (ds1820_search_ROM() && devices_found<MAX_SENSORS-1)
+ *       while (true)
  *       {
- *          devices_found++;
- *       }
- *
- *       if (devices_found==0)
- *       {
- *          debug("No devices found");
- *       }
- *       else
- *       {
- *           while (true)
- *           {
- *               ds1820_convert_temperature(ALL);
-*
- *               for (i=0; i<devices_found; i++)
- *               {
- *                   float temp = ds1820_read_temperature(CELSIUS);
- *                   debug("%3.1f\r\n",temp);
- *                   wait_ms(2000);
- *               }
- *           }
+ *           ds1820_convert_temperature(ALL);
+ *           float temp = ds1820_read_temperature(CELSIUS);
+ *           debug("%3.1f\r\n",temp);
+ *           wait_ms(2000);
  *       }
  *   }
- *   @endcode
+ * @endcode
  */
 
 /** DS1820 mbed specific dev object **/
